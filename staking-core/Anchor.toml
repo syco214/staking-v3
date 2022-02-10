@@ -1,0 +1,16 @@
+[programs.localnet]
+nft_staking = "D3k7Rsm8RWMU2Q5sRNfwsDCsv7G5jkF8DZtDfZqDUS7k"
+[programs.devnet]
+nft_staking = "D3k7Rsm8RWMU2Q5sRNfwsDCsv7G5jkF8DZtDfZqDUS7k"
+[programs.mainnet]
+nft_staking = "D3k7Rsm8RWMU2Q5sRNfwsDCsv7G5jkF8DZtDfZqDUS7k" 
+
+[registry]
+url = "https://anchor.projectserum.com"
+
+[provider]
+cluster = "devnet"
+wallet = "/home/wstar/.config/solana/id.json"
+
+[scripts]
+test = "mocha -t 1000000 tests/"
