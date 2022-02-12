@@ -233,10 +233,11 @@ const Home = () => {
 
         var mintPubKey = new PublicKey(metaNFT.mint);
 
+        const walletPubkey = provider.wallet.publicKey;
         const [
             userPubkey,
             userNonce
-        ] = await getStakeUserPubkey(provider.wallet.publicKey);
+        ] = await getStakeUserPubkey(walletPubkey);
 
         let instructions = [];
         var accountFalg = false;
@@ -248,7 +249,7 @@ const Home = () => {
             console.log(err)
         }
 
-        const [_storePubkey, _storeNonce] = await getStakeUserStorePubkey(provider.wallet.publicKey, 1);
+        const [_storePubkey, _storeNonce] = await getStakeUserStorePubkey(walletPubkey, 1);
         let storePubkey = _storePubkey;
         let storeNonce = _storeNonce;
         if (accountFalg === false) {
@@ -258,17 +259,17 @@ const Home = () => {
                     pool: poolPublicKey,
                     user: userPubkey,
                     userStore: storePubkey,
-                    owner: provider.wallet.publicKey,
+                    owner: walletPubkey,
                     systemProgram: SystemProgram.programId,
                 },
             }));
         } else {
-            const [_storePubkey, _storeNonce] = await getStakeUserStorePubkey(provider.wallet.publicKey, userObject.stores);
+            const [_storePubkey, _storeNonce] = await getStakeUserStorePubkey(walletPubkey, userObject.stores);
             storePubkey = _storePubkey;
             storeNonce = _storeNonce;
             const userStoreObject = await program.account.userStore.fetch(storePubkey);
             if (userStoreObject.nftMints.length >= 300) {
-                const [newStorePubkey, newStoreNonce] = await getStakeUserStorePubkey(provider.wallet.publicKey, userObject.stores + 1);
+                const [newStorePubkey, newStoreNonce] = await getStakeUserStorePubkey(walletPubkey, userObject.stores + 1);
                 storePubkey = newStorePubkey;
                 storeNonce = newStoreNonce;
                 instructions.push(await program.instruction.createUserStore(newStoreNonce, {
@@ -276,7 +277,7 @@ const Home = () => {
                         pool: poolPublicKey,
                         user: userPubkey,
                         userStore: newStorePubkey,
-                        owner: provider.wallet.publicKey,
+                        owner: walletPubkey,
                         systemProgram: SystemProgram.programId,
                     },
                 }));
@@ -286,37 +287,48 @@ const Home = () => {
         console.log("Stake NFT");
         const nftMint = new Token(provider.connection, mintPubKey, TOKEN_PROGRAM_ID, provider.wallet.payer);
 
-        let nftAccount = await nftMint.getOrCreateAssociatedAccountInfo(
-            provider.wallet.publicKey,
-        );
+        const nftOwnerAccounts = await provider.connection.getTokenAccountsByOwner(walletPubkey, { mint: nftMint.publicKey });
+        let nftAccount;
+        if (nftOwnerAccounts.value.length == 0) {
+            alert("This nft is not your nft.");
+            return;
+        }
+        else {
+            nftAccount = nftOwnerAccounts.value[0].pubkey;
+            const nftBalance = await provider.connection.getTokenAccountBalance(nftAccount);
+            if (nftBalance.value.uiAmount === 0) {
+                alert("This nft is not your nft.");
+            }
+        }
 
+        console.log("1----------------")
         let metadata = await getMetadata(nftMint.publicKey);
-
+        console.log("2----------------")
         const [poolSigner] = await getPoolSigner();
 
         const lpPoolAccount = poolObject.lpTokenPoolVault;
-
+        console.log("3----------------")
         let lpUserAccount = await getOrCreateAssociatedTokenAccount(
             provider.connection,
-            wallet.publicKey,
+            walletPubkey,
             lpMintPublicKey,
-            wallet.publicKey,
+            walletPubkey,
             signTransaction
         );
-
+        console.log("4----------------")
         const nftAccounts = await provider.connection.getTokenAccountsByOwner(poolSigner, { mint: nftMint.publicKey });
         let toTokenAccount;
         if (nftAccounts.value.length == 0) {
             try {
-
+                console.log("5----------------")
                 let toTokenAccountObject = await createTokenAccount(
                     provider.connection,
-                    wallet.publicKey,
+                    walletPubkey,
                     nftMint.publicKey,
                     poolSigner,
                     signTransaction
                 );
-
+                console.log("6----------------")
                 toTokenAccount = toTokenAccountObject.address;
             } catch (error) {
                 if (error.message === 'TokenAccountNotFoundError' || error.message === 'TokenInvalidAccountOwnerError') {
@@ -342,8 +354,8 @@ const Home = () => {
                         // User.
                         user: userPubkey,
                         userStore: storePubkey,
-                        owner: provider.wallet.publicKey,
-                        stakeFromAccount: nftAccount.address,
+                        owner: walletPubkey,
+                        stakeFromAccount: nftAccount,
                         // Program signers.
                         poolSigner,
                         tokenProgram: TOKEN_PROGRAM_ID,
@@ -355,7 +367,7 @@ const Home = () => {
             console.log("Success!");
             getPendingRewardsFunc();
             setLoading(false);
-            await setNftTokenData(provider.wallet.publicKey);
+            await setNftTokenData(walletPubkey);
             setLoading(true);
         } catch (err) {
             alert("Something went wrong! Please try again.");
@@ -441,9 +453,14 @@ const Home = () => {
         const lpPoolAccount = poolObject.lpTokenPoolVault;
 
         const lpMint = new Token(provider.connection, lpMintPublicKey, TOKEN_PROGRAM_ID, provider.wallet.payer);
-        let lpUserAccount = await lpMint.getOrCreateAssociatedAccountInfo(
-            provider.wallet.publicKey,
-        );
+        const lpUserAccounts = await connection.getTokenAccountsByOwner(provider.wallet.publicKey, { mint: lpMintPublicKey });
+        let lpUserAccount;
+        if (lpUserAccounts.value.length == 0) {
+            lpUserAccount = await lpMint.createAssociatedTokenAccount(provider.wallet.publicKey);
+        }
+        else {
+            lpUserAccount = lpUserAccounts.value[0].pubkey;
+        }
 
         let metadata = await getMetadata(nftMint.publicKey);
 
@@ -453,12 +470,17 @@ const Home = () => {
         let nftAccounts = await connection.getTokenAccountsByOwner(poolSigner, {
             mint: mintPubKey
         })
-
         let nftAccount = nftAccounts.value[0].pubkey;
 
-        let toTokenAccount = await nftMint.getOrCreateAssociatedAccountInfo(
-            provider.wallet.publicKey
-        )
+        const toTokenAccounts = await connection.getTokenAccountsByOwner(provider.wallet.publicKey, { mint: mintPubKey });
+        let toTokenAccount;
+        if (toTokenAccounts.value.length == 0) {
+            alert("This is not NFT that staked by you.");
+            return;
+        }
+        else {
+            toTokenAccount = toTokenAccounts.value[0].pubkey;
+        }
 
         const [userPubkey] = await getStakeUserPubkey(provider.wallet.publicKey);
         const [storePubkey] = await getStakeUserStorePubkey(provider.wallet.publicKey, mintObj.storeId);
@@ -472,12 +494,12 @@ const Home = () => {
                         vault: vaultPublicKey,
                         stakeToAccount: nftAccount,
                         lpTokenPoolVault: lpPoolAccount,
-                        lpTokenReceiver: lpUserAccount.address,
+                        lpTokenReceiver: lpUserAccount,
                         // User.
                         user: userPubkey,
                         userStore: storePubkey,
                         owner: provider.wallet.publicKey,
-                        stakeFromAccount: toTokenAccount.address,
+                        stakeFromAccount: toTokenAccount,
                         // Program signers.
                         poolSigner,
                         // Misc.
@@ -495,7 +517,6 @@ const Home = () => {
             alert("Something when wrong. Try again");
         }
         setLoading(true);
-
     }
 
     const getMetadata = async (mint) => {
@@ -665,12 +686,12 @@ const Home = () => {
                                 </WalletModalProvider>
                             </Col>
                             <Col style={{ textAlign: 'right' }}>
-                                <Row style={{minWidth:850}}>
-                                    <Col style={{whiteSpace:"nowrap"}}>
+                                <Row style={{ minWidth: 850 }}>
+                                    <Col style={{ whiteSpace: "nowrap" }}>
                                         <div className="pendding-rewards">Total Staked: {totalStaked}/5555 Bounty Hunters</div>
                                         <div className="pendding-rewards">My Total Staked: {stakedNfts} Bounty Hunters</div>
                                     </Col>
-                                    <Col style={{whiteSpace:"nowrap"}}>
+                                    <Col style={{ whiteSpace: "nowrap" }}>
                                         <div className="pendding-rewards">Daily Rewards: {dailyRewards} $BNTY</div>
                                         <div className="pendding-rewards">Pending Rewards: {pendingRewards} $BNTY</div>
                                     </Col>
