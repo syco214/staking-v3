@@ -90,7 +90,7 @@ Your wallet have to contain some SOL on mainnet.
 
 `mkdir json`
 
-`solana-keygen new --outfile json/pool-main.json`
+`solana-keygen new --outfile json/pool.json`
 
 #### DEVNET
 
@@ -100,11 +100,22 @@ Your wallet have to contain some SOL on mainnet.
 
 `yarn run init-pool`
 
-### Set Reward Per Token
+### Set Pool Reward Per Token
 
-`yarn set_reward_per_token <CANDY_MACHINE_ID> <REWARD_AMOUNT>`
+`yarn set_reward_per_token <REWARD_AMOUNT>`
 
 #### NOTE: reward per token amount is 1 by default. If you want to run this command on devnet, you need to add `--env devnet`.
+
+### Create/Update/Remove Candy Machine Reward Per Token
+
+`yarn create_cm_reward_per_token`
+
+`yarn set_cm_reward_per_token <CANDY_MACHINE_ID> <REWARD_AMOUNT>`
+
+`yarn remove_cm_reward_per_token <CANDY_MACHINE_ID>`
+
+
+#### NOTE: If you don't set reward per token for candy machine, the rewarod amount is pool reward per token by default. If you want to run this command on devnet, you need to add `--env devnet`.
 
 ### Add new candy machine id
 
