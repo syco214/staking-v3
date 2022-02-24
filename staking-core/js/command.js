@@ -56,13 +56,12 @@ const poolRawData = fs.readFileSync(poolPath);
 let poolKeypair = anchor.web3.Keypair.fromSecretKey(new Uint8Array(JSON.parse(poolRawData)));
 
 const setRewardPerToken = async () => {
-    if (!values[0] || !values[1]) {
-        console.log('Missing some arguments.\n\nyarn set_reward_per_token <CANDY_MACHINE_ID> <REWARD_AMOUNT>');
+    if (!values[0]) {
+        console.log('Missing some arguments.\n\nyarn set_reward_per_token <REWARD_AMOUNT>');
         return;
     }
 
-    const candyMachine = new anchor.web3.PublicKey(values[0]);
-    const rewardPerToken = new anchor.BN(values[1] * anchor.web3.LAMPORTS_PER_SOL);
+    const rewardPerToken = new anchor.BN(values[0] * anchor.web3.LAMPORTS_PER_SOL);
     await program.rpc.setRewardPerToken(rewardPerToken, {
         accounts: {
             // Stake instance.
