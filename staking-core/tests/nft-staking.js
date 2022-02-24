@@ -77,6 +77,18 @@ describe('Multiuser NFT Staking', () => {
     await funder.initializePool(poolKeypair);
   });
 
+  it("Create reward per token account", async () => {
+    await funder.createCandyMachineRewardPerToken();
+  })
+
+  it("set reward per token account", async () => {
+    await funder.setCandyMachineRewardPerToken(c1, 1);
+  })
+
+  it("remove reward per token account", async () => {
+    await funder.removeCandyMachineRewardPerToken(c1);
+  })
+
   it("Add candy machine", async () => {
     await funder.addCandyMachine(c1, 1, true, funder.admin.vaultPubkey);
     await funder.addCandyMachine(c2, 2, false, funder.admin.vaultPubkey);

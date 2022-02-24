@@ -14,7 +14,7 @@ const walletKeyData = JSON.parse(fs.readFileSync(os.homedir() + '/.config/solana
 const walletKeypair = anchor.web3.Keypair.fromSecretKey(new Uint8Array(walletKeyData));
 const wallet = new anchor.Wallet(walletKeypair);
 
-let ANCHOR_PROVIDER_URL = 'https://blue-delicate-wildflower.solana-mainnet.quiknode.pro/2f054b4c3a7d3f8841b584875204e3aa7c42d8ab/';
+let ANCHOR_PROVIDER_URL = 'https://ssc-dao.genesysgo.net';
 let STAKE_TOKEN = 'TRck3zHXCTyoAsiKPn1NyGb3i1mXFbB8JHheh7uFiVL';
 let REWARD_TOKEN = 'BNTYkJdHkdP9eH4uGouRkqz9RifYL8knHVVVmBMgcNzx';
 let poolPath = 'json/pool-main.json';
@@ -36,6 +36,9 @@ if (argv.indexOf('--env') > -1) {
         poolPath = 'json/pool.json';
     } else if (env == 'localnet') {
         ANCHOR_PROVIDER_URL = 'http://localhost:8899';
+        STAKE_TOKEN = '5zTL9eNobiPbdcMW6s6jAZPJbdN9jTs9VZTh4mYkU3a6';
+        REWARD_TOKEN = 'BNg49dZHNtbT56D3bXK4zoLN3roNVYMtAgJEqDLzyNsc';
+        poolPath = 'json/pool.json';
     }
 }
 
@@ -313,6 +316,93 @@ const depositRewardToken = async () => {
     );
 }
 
+const createCandyMachineRewardPerToken = async () => {
+    const [
+        cmRewardPerToken,
+        nonce,
+    ] = await anchor.web3.PublicKey.findProgramAddress(
+        [
+            poolKeypair.publicKey.toBuffer(),
+            Buffer.from('reward_per_token')
+        ],
+        program.programId
+    );
+    
+    await program.rpc.createCandyMachineRewardPerToken(nonce, {
+        accounts: {
+            // Stake instance.
+            pool: poolKeypair.publicKey,
+            cmRewardPerToken: cmRewardPerToken,
+            authority: provider.wallet.publicKey,
+            systemProgram: anchor.web3.SystemProgram.programId,
+        },
+    });
+}
+
+const setCandyMachineRewardPerToken = async () => {
+    if (!values[0]) {
+        console.log('Missing an arguments.\n\nyarn set_cm_reward_per_token <CANDY_MACHINE_ID> <REWARD_AMOUNT>');
+        return;
+    }
+
+    if (!values[1]) {
+        console.log('Missing an arguments.\n\nyarn set_cm_reward_per_token <CANDY_MACHINE_ID> <REWARD_AMOUNT>');
+        return;
+    }
+
+    const candyMachine = new anchor.web3.PublicKey(values[0]);
+    const reward = new anchor.BN(parseFloat(values[1]) * anchor.web3.LAMPORTS_PER_SOL);
+
+    const [
+        cmRewardPerToken,
+        nonce,
+    ] = await anchor.web3.PublicKey.findProgramAddress(
+        [
+            poolKeypair.publicKey.toBuffer(),
+            Buffer.from('reward_per_token')
+        ],
+        program.programId
+    );
+    await program.rpc.setCandyMachineRewardPerToken(candyMachine, reward, {
+        accounts: {
+            // Stake instance.
+            pool: poolKeypair.publicKey,
+            cmRewardPerToken: cmRewardPerToken,
+            authority: provider.wallet.publicKey,
+            systemProgram: anchor.web3.SystemProgram.programId,
+        },
+    });
+}
+
+const removeCandyMachineRewardPerToken = async () => {
+    if (!values[0]) {
+        console.log('Missing an arguments.\n\nyarn remove_cm_reward_per_token <CANDY_MACHINE_ID>');
+        return;
+    }
+
+    const candyMachine = new anchor.web3.PublicKey(values[0]);
+
+    const [
+        cmRewardPerToken,
+        nonce,
+    ] = await anchor.web3.PublicKey.findProgramAddress(
+        [
+            poolKeypair.publicKey.toBuffer(),
+            Buffer.from('reward_per_token')
+        ],
+        program.programId
+    );
+    await program.rpc.removeCandyMachineRewardPerToken(candyMachine, {
+        accounts: {
+            // Stake instance.
+            pool: poolKeypair.publicKey,
+            cmRewardPerToken: cmRewardPerToken,
+            authority: provider.wallet.publicKey,
+            systemProgram: anchor.web3.SystemProgram.programId,
+        },
+    });
+}
+
 console.log("Program ID: ", programID.toString());
 console.log("Wallet: ", provider.wallet.publicKey.toString());
 
@@ -323,7 +413,10 @@ const commandID = argv.indexOf('--command_id=1') > -1 ? 1 :
                 argv.indexOf('--command_id=5') > -1 ? 5 :
                     argv.indexOf('--command_id=6') > -1 ? 6 :
                         argv.indexOf('--command_id=7') > -1 ? 7 :
-                            argv.indexOf('--command_id=8') > -1 ? 8 : -1;
+                        argv.indexOf('--command_id=8') > -1 ? 8 :
+                        argv.indexOf('--command_id=9') > -1 ? 9 :
+                        argv.indexOf('--command_id=10') > -1 ? 10 :
+                            argv.indexOf('--command_id=11') > -1 ? 11 : -1;
 switch (commandID) {
     case 1:
         setRewardPerToken();
@@ -348,6 +441,15 @@ switch (commandID) {
         break;
     case 8:
         depositRewardToken();
+        break;
+    case 9:
+        createCandyMachineRewardPerToken();
+        break;
+    case 10:
+        setCandyMachineRewardPerToken();
+        break;
+    case 11:
+        removeCandyMachineRewardPerToken();
         break;
     default:
         console.log('Unrecognized command');
