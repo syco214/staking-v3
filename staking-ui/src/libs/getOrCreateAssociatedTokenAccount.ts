@@ -56,7 +56,8 @@ export async function getOrCreateAssociatedTokenAccount(
                 const signature = await connection.sendRawTransaction(signed.serialize())
 
                 await connection.confirmTransaction(signature)
-            } catch (error: unknown) {
+            } catch (error: any) {
+                console.log(error.message)
                 // Ignore all errors; for now there is no API-compatible way to selectively ignore the expected
                 // instruction error if the associated account exists already.
             }

@@ -46,7 +46,7 @@ import {
     funderPublicKey,
     programId
 } from "./config";
-import { getPoolSigner, getStakeUserPubkey, getStakeUserStorePubkey, getVaultPubkey } from './utils';
+import { getCmPerTokenRewards, getPoolSigner, getStakeUserPubkey, getStakeUserStorePubkey, getVaultPubkey } from './utils';
 
 const opts = {
     preflightCommitment: "processed"
@@ -91,6 +91,7 @@ const Home = () => {
 
     const getStakedNFTs = async () => {
         let [poolSigner] = await getPoolSigner();
+        console.log("poolSigner: ", poolSigner.toBase58())
         const nfts = await getParsedNftAccountsByOwner({
             publicAddress: poolSigner,
             connection: connection,
@@ -179,9 +180,9 @@ const Home = () => {
             let n = data.length;
             // let n = 10;
             for (let i = 0; i < n; i++) {
-                if (nfts.indexOf(data[i].mint) === -1) {
-                    continue;
-                }
+                // if (nfts.indexOf(data[i].mint) === -1) {
+                //     continue;
+                // }
                 var val = {};
                 try {
                     val = await axios.get(data[i].data.uri);
@@ -202,7 +203,7 @@ const Home = () => {
                 val.storeId = data[i].storeId;
                 arr.push(val);
             }
-
+            console.log(arr)
             setNftData(arr)
         } catch (error) {
             console.log(error);
@@ -341,6 +342,7 @@ const Home = () => {
             toTokenAccount = nftAccounts.value[0].pubkey;
         }
 
+        const [cmRewardPerToken] = await getCmPerTokenRewards();
         try {
             instructions.push(await program.instruction.stake(
                 {
@@ -353,6 +355,7 @@ const Home = () => {
                         lpTokenReceiver: lpUserAccount.address,
                         // User.
                         user: userPubkey,
+                        cmRewardPerToken,
                         userStore: storePubkey,
                         owner: walletPubkey,
                         stakeFromAccount: nftAccount,
@@ -410,6 +413,7 @@ const Home = () => {
 
         const [poolSigner] = await getPoolSigner();
         const userObject = await program.account.user.fetch(userPubkey);
+        const [cmRewardPerToken] = await getCmPerTokenRewards();
         let instructions = [];
         for (var i = 0; i < userObject.stores; i++) {
             const [storePubkey] = await getStakeUserStorePubkey(provider.wallet.publicKey, i + 1);
@@ -421,6 +425,7 @@ const Home = () => {
                     rewardVault: poolObject.rewardVault,
                     // User.
                     user: userPubkey,
+                    cmRewardPerToken,
                     userStore: storePubkey,
                     owner: provider.wallet.publicKey,
                     rewardAccount: rewardAccount.address,
@@ -490,6 +495,7 @@ const Home = () => {
 
         const [userPubkey] = await getStakeUserPubkey(provider.wallet.publicKey);
         const [storePubkey] = await getStakeUserStorePubkey(provider.wallet.publicKey, mintObj.storeId);
+        const [cmRewardPerToken] = await getCmPerTokenRewards();
         // console.log(mintObj); return;
         try {
             await program.rpc.unstake(
@@ -503,6 +509,7 @@ const Home = () => {
                         lpTokenReceiver: lpUserAccount,
                         // User.
                         user: userPubkey,
+                        cmRewardPerToken,
                         userStore: storePubkey,
                         owner: provider.wallet.publicKey,
                         stakeFromAccount: toTokenAccount,
@@ -595,9 +602,9 @@ const Home = () => {
                             {nftData &&
                                 nftData.length > 0 &&
                                 nftData.map((val, ind) => {
-                                    if (nfts.indexOf(val.mint) === -1) {
-                                        return null;
-                                    }
+                                    // if (nfts.indexOf(val.mint) === -1) {
+                                    //     return null;
+                                    // }
                                     return (
                                         <Col key={ind} xs="6" sm="6" md="4" lg="4" xl="4" style={{ textAlign: 'center' }} className={(val.staked === true ? 'staked' : 'unstaked')}>
                                             <Card className={"nft-card"}>

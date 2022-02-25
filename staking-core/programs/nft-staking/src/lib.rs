@@ -6,7 +6,7 @@ use std::convert::Into;
 use std::convert::TryInto;
 use metaplex_token_metadata::state::{Metadata};
 
-declare_id!("DHFr7i8DBALJPupg9Q7o2DZe1qiNsHXc6eV5GyZrkhNT");
+declare_id!("D3k7Rsm8RWMU2Q5sRNfwsDCsv7G5jkF8DZtDfZqDUS7k");
 mod constants {
     pub const LP_DEPOSIT_REQUIREMENT: u64 = 10_000_000_000_000;
 }
@@ -611,7 +611,7 @@ pub mod nft_staking {
 #[derive(Accounts)]
 #[instruction(pool_nonce: u8, vault_nonce: u8)]
 pub struct InitializePool<'info> {
-    /// This is pool authority account
+    /// CHECK: This is pool authority account
     authority: UncheckedAccount<'info>,
 
     #[account(
@@ -639,6 +639,7 @@ pub struct InitializePool<'info> {
         ],
         bump = pool_nonce,
     )]
+    /// CHECK: This is pool signer with seeds
     pool_signer: UncheckedAccount<'info>,
 
     #[account(
@@ -652,10 +653,11 @@ pub struct InitializePool<'info> {
             owner.key.as_ref(), 
             pool.to_account_info().key.as_ref()
         ],
-        bump = vault_nonce,
+        bump,
         space = 10240,
     )]
     vault: Box<Account<'info, Vault>>,
+    #[account(mut)]
     owner: Signer<'info>,
     
     token_program: Program<'info, Token>,
@@ -692,10 +694,11 @@ pub struct CreateCandyMachineRewardPerToken<'info> {
             pool.to_account_info().key.as_ref(),
             "reward_per_token".as_bytes(),
         ],
-        bump = nonce,
+        bump,
         space = 10240,
     )]
     cm_reward_per_token: Box<Account<'info, CandyMachineRewardPerToken>>,
+    #[account(mut)]
     authority: Signer<'info>,
     // Misc.
     system_program: Program<'info, System>,
@@ -740,7 +743,7 @@ pub struct CreateUser<'info> {
             pool.to_account_info().key.as_ref(),
             "user".as_bytes()
         ],
-        bump = nonce,
+        bump,
     )]
     user: Box<Account<'info, User>>,
     #[account(
@@ -752,10 +755,11 @@ pub struct CreateUser<'info> {
             "user".as_bytes(),
             &[1]
         ],
-        bump = store_nonce,
+        bump,
         space = 10240
     )]
     user_store: Box<Account<'info, UserStore>>,
+    #[account(mut)]
     owner: Signer<'info>,
     // Misc.
     system_program: Program<'info, System>,
@@ -789,10 +793,11 @@ pub struct CreateUserStore<'info> {
             "user".as_bytes(),
             &[user.stores + 1]
         ],
-        bump = nonce,
+        bump,
         space = 10240
     )]
     user_store: Box<Account<'info, UserStore>>,
+    #[account(mut)]
     owner: Signer<'info>,
     // Misc.
     system_program: Program<'info, System>,
@@ -820,6 +825,7 @@ pub struct Pause<'info> {
         ],
         bump = pool.nonce,
     )]
+    /// CHECK: This is pool signer with seeds
     pool_signer: UncheckedAccount<'info>,
     token_program: Program<'info, Token>,
 }
@@ -858,6 +864,7 @@ pub struct Unpause<'info> {
         ],
         bump = pool.nonce,
     )]
+    /// CHECK: This is pool signer with seeds
     pool_signer: UncheckedAccount<'info>,
     token_program: Program<'info, Token>,
 }
@@ -888,6 +895,7 @@ pub struct DepositStake<'info> {
         ],
         bump = pool.nonce,
     )]
+    /// CHECK: This is pool signer with seeds
     pool_signer: UncheckedAccount<'info>,
     token_program: Program<'info, Token>,
 }
@@ -918,6 +926,7 @@ pub struct DepositReward<'info> {
         ],
         bump = pool.nonce,
     )]
+    /// CHECK: This is pool signer with seeds
     pool_signer: UncheckedAccount<'info>,
     token_program: Program<'info, Token>,
 }
@@ -977,7 +986,7 @@ pub struct Stake<'info> {
     owner: Signer<'info>,
     #[account(mut)]
     stake_from_account: Box<Account<'info, TokenAccount>>,
-    /// This is nft metadata account. 
+    /// CHECK: This is nft metadata account. 
     metadata_info: UncheckedAccount<'info>,
 
     #[account(
@@ -994,6 +1003,7 @@ pub struct Stake<'info> {
         ],
         bump = pool.nonce,
     )]
+    /// CHECK: This is pool signer with seeds
     pool_signer: UncheckedAccount<'info>,
 
     // Misc.
@@ -1061,6 +1071,7 @@ pub struct ClaimReward<'info> {
         ],
         bump = pool.nonce,
     )]
+    /// CHECK: This is pool signer with seeds
     pool_signer: UncheckedAccount<'info>,
 
     // Misc.
@@ -1095,6 +1106,7 @@ pub struct WithdrawStake<'info> {
         ],
         bump = pool.nonce,
     )]
+    /// CHECK: This is pool signer with seeds
     pool_signer: UncheckedAccount<'info>,
 
     // Misc.
@@ -1129,6 +1141,7 @@ pub struct WithdrawReward<'info> {
         ],
         bump = pool.nonce,
     )]
+    /// CHECK: This is pool signer with seeds
     pool_signer: UncheckedAccount<'info>,
 
     // Misc.
