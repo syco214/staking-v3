@@ -41,7 +41,7 @@ export async function getCmPerTokenRewards() {
     return await PublicKey.findProgramAddress(
         [
             poolPublicKey.toBuffer(),
-            Buffer.from('reward_per_token')
+            (new TextEncoder().encode('reward_per_token'))
         ],
         programId
     );

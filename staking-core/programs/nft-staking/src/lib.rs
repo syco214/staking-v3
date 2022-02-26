@@ -504,6 +504,27 @@ pub mod nft_staking {
         Ok(())
     }
 
+    pub fn close_n_account(ctx: Context<CloseNAccount>) -> Result<()> {
+        let pool = ctx.accounts.pool;
+        let seeds = &[
+            pool.to_account_info().key.as_ref(),
+            &[pool.nonce],
+        ];
+        let pool_signer = &[&seeds[..]];
+        anchor_spl::token::close_account(
+            CpiContext::new_with_signer(
+                ctx.accounts.token_program.to_account_info(),
+                anchor_spl::token::CloseAccount{
+                    account: ctx.accounts.close_account.to_account_info(),
+                    destination: ctx.accounts.owner.to_account_info(),
+                    authority: ctx.accounts.pool_signer.to_account_info(),
+                },
+                pool_signer
+        ))?;
+
+        Ok(())
+    }
+
     pub fn withdraw_stake(ctx: Context<WithdrawStake>, amount: u64) -> Result<()> {
 
         let pool = &ctx.accounts.pool;
@@ -1146,6 +1167,14 @@ pub struct WithdrawReward<'info> {
 
     // Misc.
     token_program: Program<'info, Token>,
+}
+
+#[derive(Accounts)]
+pub struct CloseNAccount<'info> {
+    pool: Box<Account<'info, Pool>>,
+    close_account: Box<Account<'info, TokenAccount>>,
+    owner: Signer<'info>,
+    system_program: Program<'info, Token>,
 }
 
 #[derive(Accounts)]
