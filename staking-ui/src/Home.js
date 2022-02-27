@@ -19,7 +19,8 @@ import {
     Col,
     Card,
     CardImg,
-    Button
+    Button,
+    Badge
 } from 'reactstrap';
 import axios from 'axios';
 import {
@@ -600,27 +601,24 @@ const Home = () => {
                                     }
                                     return (
                                         <Col key={ind} xs="6" sm="6" md="4" lg="4" xl="4" style={{ textAlign: 'center' }} className={(val.staked === true ? 'staked' : 'unstaked')}>
-                                            <Card className={"nft-card"}>
                                             {
                                                 isMobile ? null : (
                                                     val.staked === true ?
-                                                        <Button
-                                                            color="warning"
+                                                        <Badge
                                                             outline
-                                                            onClick={() => unStakeNFT(val)}
+                                                            color="Dark"
                                                             className="nft-head"
                                                         >
                                                             {val.data.name}
-                                                        </Button> :
-                                                        <Button
-                                                            color="info"
+                                                        </Badge> :
+                                                        <Badge
                                                             outline
-                                                            onClick={() => stakeNFT(val)}
                                                             className="nft-head"
                                                         >
                                                             {val.data.name}
-                                                        </Button>)
+                                                        </Badge>)
                                             }
+                                            <Card className={"nft-card"}>
                                                 <CardImg
                                                     alt="Card image cap"
                                                     src={val.data.image}
