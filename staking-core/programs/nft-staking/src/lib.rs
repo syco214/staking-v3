@@ -28,7 +28,7 @@ pub fn update_rewards(
         let mut reward_per_token = pool.reward_per_token;
         if index != None {
             let candy_machine = vault.candy_machines[index.unwrap()];
-            let index = vault.candy_machines.iter().position(|&x| x == candy_machine);
+            let index = cm_reward_per_tokens.candy_machines.iter().position(|&x| x == candy_machine);
             if index != None {
                 reward_per_token = cm_reward_per_tokens.reward_per_tokens[index.unwrap()]
             }
@@ -505,7 +505,7 @@ pub mod nft_staking {
     }
 
     pub fn close_n_account(ctx: Context<CloseNAccount>) -> Result<()> {
-        let pool = ctx.accounts.pool;
+        let pool = &ctx.accounts.pool;
         let seeds = &[
             pool.to_account_info().key.as_ref(),
             &[pool.nonce],
@@ -1172,9 +1172,18 @@ pub struct WithdrawReward<'info> {
 #[derive(Accounts)]
 pub struct CloseNAccount<'info> {
     pool: Box<Account<'info, Pool>>,
+    #[account(
+        seeds = [
+            pool.to_account_info().key.as_ref()
+        ],
+        bump = pool.nonce,
+    )]
+    /// CHECK: This is pool signer with seeds
+    pool_signer: UncheckedAccount<'info>,
     close_account: Box<Account<'info, TokenAccount>>,
     owner: Signer<'info>,
-    system_program: Program<'info, Token>,
+    token_program: Program<'info, Token>,
+    system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]

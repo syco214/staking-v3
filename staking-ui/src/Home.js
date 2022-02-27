@@ -138,8 +138,16 @@ const Home = () => {
 
     const getPendingRewardsFunc = async () => {
         const [userPubkey] = await getStakeUserPubkey(provider.wallet.publicKey);
+        const [cmRewardPerToken] = await getCmPerTokenRewards();
 
         let poolObject = await program.account.pool.fetch(poolPublicKey);
+        console.log(program.account)
+        let cmRewardPerTokenObject = await program.account.candyMachineRewardPerToken.fetch(cmRewardPerToken);
+        const [vaultPublicKey] = await getVaultPubkey();
+        const vaultObject = await program.account.vault.fetch(vaultPublicKey);
+        let vaultCms = vaultObject.candyMachines.map((cm) => cm.toBase58());
+        let candyMachines = cmRewardPerTokenObject.candyMachines.map((cm) => cm.toBase58());
+        console.log(candyMachines)
         try {
             const userObject = await program.account.user.fetch(userPubkey);
             var now = parseInt((new Date()).getTime() / 1000)
@@ -149,8 +157,17 @@ const Home = () => {
                 const [storePubkey] = await getStakeUserStorePubkey(provider.wallet.publicKey, i + 1);
                 const storeObject = await program.account.userStore.fetch(storePubkey);
                 for (let j = 0; j < storeObject.nftMints.length; j++) {
+                    let rewardPerToken = poolObject.rewardPerToken;
+                    let cmType = storeObject.types[j];
+                    let cmIndex = vaultObject.rewardTypes.indexOf(cmType);
+                    console.log(cmType, cmIndex, vaultObject.rewardTypes)
+                    console.log(vaultCms, cmRewardPerTokenObject.rewardPerTokens)
+                    if (cmIndex > -1 && candyMachines.indexOf(vaultCms[cmIndex]) > -1) {
+                        rewardPerToken = cmRewardPerTokenObject.rewardPerTokens[candyMachines.indexOf(vaultCms[cmIndex])];
+                    }
+                    console.log(rewardPerToken.toNumber())
                     let diffDays = now - storeObject.stakedTimes[j].toNumber();
-                    const d = poolObject.rewardPerToken.toNumber() / storeObject.types[j];
+                    const d = rewardPerToken.toNumber() / storeObject.types[j];
                     a += d * parseInt(diffDays / (24 * 60 * 60));
                     dd += d;
                 }
@@ -172,7 +189,6 @@ const Home = () => {
             let arr = [];
 
             var stakedNFTs = await getStakedNFTs();
-            console.log(stakedNFTs)
             for (let i = 0; i < stakedNFTs.length; i++) {
                 data.push(stakedNFTs[i]);
             }
