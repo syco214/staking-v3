@@ -52,7 +52,7 @@
         },
         {
           "name": "owner",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true
         },
         {
@@ -104,6 +104,103 @@
       ]
     },
     {
+      "name": "createCandyMachineRewardPerToken",
+      "accounts": [
+        {
+          "name": "pool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "cmRewardPerToken",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "nonce",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "setCandyMachineRewardPerToken",
+      "accounts": [
+        {
+          "name": "pool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "cmRewardPerToken",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "candyMachine",
+          "type": "publicKey"
+        },
+        {
+          "name": "rewardPerToken",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "removeCandyMachineRewardPerToken",
+      "accounts": [
+        {
+          "name": "pool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "cmRewardPerToken",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "candyMachine",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
       "name": "createUser",
       "accounts": [
         {
@@ -123,7 +220,7 @@
         },
         {
           "name": "owner",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true
         },
         {
@@ -163,7 +260,7 @@
         },
         {
           "name": "owner",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true
         },
         {
@@ -390,6 +487,11 @@
           "isSigner": false
         },
         {
+          "name": "cmRewardPerToken",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "owner",
           "isMut": false,
           "isSigner": true
@@ -456,6 +558,11 @@
           "isSigner": false
         },
         {
+          "name": "cmRewardPerToken",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "owner",
           "isMut": false,
           "isSigner": true
@@ -517,6 +624,11 @@
           "isSigner": false
         },
         {
+          "name": "cmRewardPerToken",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "userStore",
           "isMut": true,
           "isSigner": false
@@ -561,6 +673,42 @@
           "name": "owner",
           "isMut": false,
           "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "closeNAccount",
+      "accounts": [
+        {
+          "name": "pool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "poolSigner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "closeAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": []
@@ -814,6 +962,30 @@
       }
     },
     {
+      "name": "CandyMachineRewardPerToken",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "candyMachines",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "rewardPerTokens",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "nonce",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
       "name": "User",
       "type": {
         "kind": "struct",
@@ -886,41 +1058,35 @@
       }
     }
   ],
-  "errors": [
+  "types": [
     {
-      "code": 6000,
-      "name": "InsufficientFundUnstake",
-      "msg": "Insufficient funds to unstake."
-    },
-    {
-      "code": 6001,
-      "name": "AmountMustBeGreaterThanZero",
-      "msg": "Amount must be greater than zero."
-    },
-    {
-      "code": 6002,
-      "name": "SingleStakeTokenBCannotBeFunded",
-      "msg": "Reward B cannot be funded - pool is single stake."
-    },
-    {
-      "code": 6003,
-      "name": "PoolPaused",
-      "msg": "Pool is paused."
-    },
-    {
-      "code": 6004,
-      "name": "CandyNotMatch",
-      "msg": "Duration cannot be shorter than one day."
-    },
-    {
-      "code": 6005,
-      "name": "DurationTooShort",
-      "msg": "This nft was not created from our candy machine."
-    },
-    {
-      "code": 6006,
-      "name": "NotFoundCandyMachine",
-      "msg": "Not found candy machine."
+      "name": "ErrorCode",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "InsufficientFundUnstake"
+          },
+          {
+            "name": "AmountMustBeGreaterThanZero"
+          },
+          {
+            "name": "SingleStakeTokenBCannotBeFunded"
+          },
+          {
+            "name": "PoolPaused"
+          },
+          {
+            "name": "CandyNotMatch"
+          },
+          {
+            "name": "DurationTooShort"
+          },
+          {
+            "name": "NotFoundCandyMachine"
+          }
+        ]
+      }
     }
   ],
   "metadata": {
