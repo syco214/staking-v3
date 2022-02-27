@@ -76,12 +76,17 @@ body {
   border-radius: 10px;
   padding: 10px;
   background: rgb(31, 31, 31);
-  color: white;
+  color: #878787;
   font-weight: 400;
   transform: translate(-50%, 0%);
   font-family: "Saira", sans-serif;
-  font-weight: 300;
+  font-weight: 500;
   z-index: 5;
+}
+
+.staked .nft-head {
+  background: linear-gradient(90deg, rgba(242, 122, 38, 1) 0%, rgba(255, 91, 0, 1) 25%, rgba(255, 139, 0, 1) 100%);
+  color: #1d1d1d;
 }
 
 .staked .nft-card {

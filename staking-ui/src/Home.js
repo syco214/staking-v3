@@ -19,7 +19,8 @@ import {
     Col,
     Card,
     CardImg,
-    Button
+    Button,
+    Badge
 } from 'reactstrap';
 import axios from 'axios';
 import {
@@ -626,22 +627,19 @@ const Home = () => {
                                             {
                                                 isMobile ? null : (
                                                     val.staked === true ?
-                                                        <Button
-                                                            color="warning"
-                                                            outline
-                                                            onClick={() => unStakeNFT(val)}
+                                                        <Badge
+                                                            color="Dark"
                                                             className="nft-head"
                                                         >
                                                             {val.data.name}
-                                                        </Button> :
-                                                        <Button
-                                                            color="info"
+                                                        </Badge> :
+                                                        <Badge
+                                                            color="Dark"
                                                             outline
-                                                            onClick={() => stakeNFT(val)}
                                                             className="nft-head"
                                                         >
                                                             {val.data.name}
-                                                        </Button>)
+                                                        </Badge>)
                                             }
                                             <Card className={"nft-card"}>
                                                 <CardImg
