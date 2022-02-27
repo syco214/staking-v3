@@ -601,6 +601,26 @@ const Home = () => {
                                     return (
                                         <Col key={ind} xs="6" sm="6" md="4" lg="4" xl="4" style={{ textAlign: 'center' }} className={(val.staked === true ? 'staked' : 'unstaked')}>
                                             <Card className={"nft-card"}>
+                                            {
+                                                isMobile ? null : (
+                                                    val.staked === true ?
+                                                        <Button
+                                                            color="warning"
+                                                            outline
+                                                            onClick={() => unStakeNFT(val)}
+                                                            className="nft-head"
+                                                        >
+                                                            {val.data.name}
+                                                        </Button> :
+                                                        <Button
+                                                            color="info"
+                                                            outline
+                                                            onClick={() => stakeNFT(val)}
+                                                            className="nft-head"
+                                                        >
+                                                            {val.data.name}
+                                                        </Button>)
+                                            }
                                                 <CardImg
                                                     alt="Card image cap"
                                                     src={val.data.image}

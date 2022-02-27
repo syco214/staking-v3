@@ -9,8 +9,8 @@ nft_staking = "D3k7Rsm8RWMU2Q5sRNfwsDCsv7G5jkF8DZtDfZqDUS7k"
 url = "https://anchor.projectserum.com"
 
 [provider]
-cluster = "devnet"
-wallet = "/home/wstar/.config/solana/id.json"
+cluster = "mainnet"
+wallet = "/Users/sageco/.config/solana/id.json"
 
 [scripts]
 test = "mocha -t 1000000 tests/"
