@@ -36,3 +36,14 @@ export async function getVaultPubkey() {
         programId
     );
 }
+
+export async function getCmPerTokenRewards() {
+    return await PublicKey.findProgramAddress(
+        [
+            poolPublicKey.toBuffer(),
+            (new TextEncoder().encode('reward_per_token'))
+        ],
+        programId
+    );
+
+}

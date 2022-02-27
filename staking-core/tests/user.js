@@ -211,6 +211,17 @@ class User {
 
         let metadata = await getMetadata(this.nftMint.publicKey);
 
+        const [
+            cmRewardPerToken,
+            nonce,
+        ] = await anchor.web3.PublicKey.findProgramAddress(
+            [
+                this.poolPubkey.toBuffer(),
+                Buffer.from('reward_per_token')
+            ],
+            this.program.programId
+        );
+
         await this.program.rpc.stake({
                 accounts: {
                     // Stake instance.
@@ -219,6 +230,7 @@ class User {
                     stakeToAccount: toTokenAccount,
                     lpTokenPoolVault: admin.lpTokenPoolVault,
                     lpTokenReceiver: this.lpTokenPubkey,
+                    cmRewardPerToken,
                     // User.
                     user: this.userPubkey,
                     userStore: this.userStorePubkey,
@@ -417,6 +429,17 @@ class User {
             return;
         }
 
+        const [
+            cmRewardPerToken,
+            nonce,
+        ] = await anchor.web3.PublicKey.findProgramAddress(
+            [
+                this.poolPubkey.toBuffer(),
+                Buffer.from('reward_per_token')
+            ],
+            this.program.programId
+        );
+
         await this.program.rpc.unstake(
             {
                 accounts: {
@@ -426,6 +449,7 @@ class User {
                     stakeToAccount: tokenAccount.pubkey,
                     lpTokenPoolVault: admin.lpTokenPoolVault,
                     lpTokenReceiver: this.lpTokenPubkey,
+                    cmRewardPerToken,
                     // User.
                     user: this.userPubkey,
                     userStore: this.userStorePubkey,
@@ -457,6 +481,17 @@ class User {
         );
         let poolSigner = _poolSigner;
 
+        const [
+            cmRewardPerToken,
+            nonce,
+        ] = await anchor.web3.PublicKey.findProgramAddress(
+            [
+                this.poolPubkey.toBuffer(),
+                Buffer.from('reward_per_token')
+            ],
+            this.program.programId
+        );
+
         await this.program.rpc.claim({
             accounts: {
                 // Stake instance.
@@ -465,7 +500,8 @@ class User {
                 rewardVault: poolObject.rewardVault,
                 // User.
                 user: this.userPubkey,
-                    userStore: this.userStorePubkey,
+                userStore: this.userStorePubkey,
+                cmRewardPerToken,
                 owner: this.provider.wallet.publicKey,
                 rewardAccount: this.mintRewardsPubkey,
                 // Program signers.
@@ -486,6 +522,72 @@ class User {
             accounts: {
                 // Stake instance.
                 pool: this.poolPubkey,
+                authority: this.provider.wallet.publicKey,
+                systemProgram: anchor.web3.SystemProgram.programId,
+            },
+        });
+    }
+
+    async createCandyMachineRewardPerToken() {
+        const [
+            cmRewardPerToken,
+            nonce,
+        ] = await anchor.web3.PublicKey.findProgramAddress(
+            [
+                this.poolPubkey.toBuffer(),
+                Buffer.from('reward_per_token')
+            ],
+            this.program.programId
+        );
+        await this.program.rpc.createCandyMachineRewardPerToken(nonce, {
+            accounts: {
+                // Stake instance.
+                pool: this.poolPubkey,
+                cmRewardPerToken: cmRewardPerToken,
+                authority: this.provider.wallet.publicKey,
+                systemProgram: anchor.web3.SystemProgram.programId,
+            },
+        });
+    }
+
+    async setCandyMachineRewardPerToken(candyMachine, reward) {
+        const [
+            cmRewardPerToken,
+            nonce,
+        ] = await anchor.web3.PublicKey.findProgramAddress(
+            [
+                this.poolPubkey.toBuffer(),
+                Buffer.from('reward_per_token')
+            ],
+            this.program.programId
+        );
+        await this.program.rpc.setCandyMachineRewardPerToken(candyMachine, new anchor.BN(reward * anchor.web3.LAMPORTS_PER_SOL), {
+            accounts: {
+                // Stake instance.
+                pool: this.poolPubkey,
+                cmRewardPerToken: cmRewardPerToken,
+                authority: this.provider.wallet.publicKey,
+                systemProgram: anchor.web3.SystemProgram.programId,
+            },
+        });
+    }
+
+    async removeCandyMachineRewardPerToken(candyMachine) {
+        const [
+            cmRewardPerToken,
+            nonce,
+        ] = await anchor.web3.PublicKey.findProgramAddress(
+            [
+                this.poolPubkey.toBuffer(),
+                Buffer.from('reward_per_token')
+            ],
+            this.program.programId
+        );
+        await this.program.rpc.removeCandyMachineRewardPerToken(candyMachine, {
+            accounts: {
+                // Stake instance.
+                pool: this.poolPubkey,
+                cmRewardPerToken: cmRewardPerToken,
                 authority: this.provider.wallet.publicKey,
                 systemProgram: anchor.web3.SystemProgram.programId,
             },
@@ -557,7 +659,6 @@ class User {
 
     async closeUser() {
         const user = await this.program.account.user.fetch(this.userPubkey);
-        console.log("rewardPerTokenPending: ", user.rewardTokenPending.toNumber())
         await this.program.rpc.closeUser(
             {
                 accounts: {

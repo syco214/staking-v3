@@ -28,6 +28,10 @@ let lpMintObject;
 let lpTokenPubkey;
 let lpMintPubkey = new anchor.web3.PublicKey('D9DaGmpuzqzYnr4qxXP7EZCu9h1RE47eu3XnayB1e9oZ');
 let mintRewards = new anchor.web3.PublicKey('EnMRdXxzohDn3PJCdvVJzBMD2FzSQegwVm87y44Pbai5');
+if (process.env.CLUSTER === 'local') {
+    lpMintPubkey = new anchor.web3.PublicKey('AnWChePFD3NFsSxU86kbNS77XqfysCpSUUcsXE3h951r');
+    mintRewards = new anchor.web3.PublicKey('87ohHoZ4uMtn54fX62NFGe1J1GhBbnFWzQaXmaBYnsoE');
+}
 let poolKeypair, rewardsMintObject;
 
 const initializeMints = async () => {

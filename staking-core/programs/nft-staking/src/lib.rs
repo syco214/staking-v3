@@ -8,7 +8,6 @@ use metaplex_token_metadata::state::{Metadata};
 
 declare_id!("D3k7Rsm8RWMU2Q5sRNfwsDCsv7G5jkF8DZtDfZqDUS7k");
 mod constants {
-    pub const LP_TOKEN_MINT_PUBKEY: &str = "TRck3zHXCTyoAsiKPn1NyGb3i1mXFbB8JHheh7uFiVL";
     pub const LP_DEPOSIT_REQUIREMENT: u64 = 10_000_000_000_000;
 }
 
@@ -16,14 +15,25 @@ pub fn update_rewards(
     pool: &mut Account<Pool>,
     u: &mut Box<Account<User>>,
     user_store: &mut Box<Account<UserStore>>,
+    vault: &mut Box<Account<Vault>>,
+    cm_reward_per_tokens: &mut Box<Account<CandyMachineRewardPerToken>>,
 ) -> Result<()> {
     let clock = clock::Clock::get().unwrap();
-    
-    let reward_per_token = pool.reward_per_token;
+
     let current_time: u64 = clock.unix_timestamp.try_into().unwrap();
     let mut reward_token_pending: u64 = 0;
     for i in 0..user_store.types.len() {
         let nft_type = user_store.types[i];
+        let index = vault.reward_types.iter().position(|&x| x == nft_type);
+        let mut reward_per_token = pool.reward_per_token;
+        if index != None {
+            let candy_machine = vault.candy_machines[index.unwrap()];
+            let index = cm_reward_per_tokens.candy_machines.iter().position(|&x| x == candy_machine);
+            if index != None {
+                reward_per_token = cm_reward_per_tokens.reward_per_tokens[index.unwrap()]
+            }
+        }
+    
         let staked_time = user_store.staked_times[i];
         let diff_days: u64 = current_time.checked_sub(staked_time).unwrap()
                                 .checked_div(24 * 60 * 60).unwrap();
@@ -89,6 +99,39 @@ pub mod nft_staking {
     pub fn set_reward_per_token(ctx: Context<SetRewardPerToken>, reward_per_token: u64) -> Result<()> {
         let pool = &mut ctx.accounts.pool;
         pool.reward_per_token = reward_per_token;
+
+        Ok(())
+    }
+
+    pub fn create_candy_machine_reward_per_token(ctx: Context<CreateCandyMachineRewardPerToken>, nonce: u8) -> Result<()> {
+        let cm_reward_per_token = &mut ctx.accounts.cm_reward_per_token;
+        cm_reward_per_token.nonce = nonce;
+        cm_reward_per_token.candy_machines = vec![];
+        cm_reward_per_token.reward_per_tokens = vec![];
+
+        Ok(())
+    }
+
+    pub fn set_candy_machine_reward_per_token(ctx: Context<SetCandyMachineRewardPerToken>, candy_machine: Pubkey, reward_per_token: u64) -> Result<()> {
+        let cm_reward_per_token = &mut ctx.accounts.cm_reward_per_token;
+        let index = cm_reward_per_token.candy_machines.iter().position(|&x| x == candy_machine);
+        if index == None {
+            cm_reward_per_token.candy_machines.push(candy_machine);
+            cm_reward_per_token.reward_per_tokens.push(reward_per_token);
+        } else {
+            cm_reward_per_token.reward_per_tokens[index.unwrap()] = reward_per_token;
+        }
+
+        Ok(())
+    }
+
+    pub fn remove_candy_machine_reward_per_token(ctx: Context<SetCandyMachineRewardPerToken>, candy_machine: Pubkey) -> Result<()> {
+        let cm_reward_per_token = &mut ctx.accounts.cm_reward_per_token;
+        let index = cm_reward_per_token.candy_machines.iter().position(|&x| x == candy_machine);
+        if index != None {
+            cm_reward_per_token.candy_machines.remove(index.unwrap());
+            cm_reward_per_token.reward_per_tokens.remove(index.unwrap());
+        }
 
         Ok(())
     }
@@ -278,6 +321,8 @@ pub mod nft_staking {
             pool,
             user,
             user_store,
+            &mut ctx.accounts.vault,
+            &mut ctx.accounts.cm_reward_per_token,
         )
         .unwrap();
         msg!("updated rewards");
@@ -360,6 +405,8 @@ pub mod nft_staking {
             pool,
             user,
             user_store,
+            vault,
+            &mut ctx.accounts.cm_reward_per_token,
         )
         .unwrap();
         user.balance_staked = user.balance_staked.checked_sub(1 as u64).unwrap();
@@ -414,6 +461,8 @@ pub mod nft_staking {
             &mut ctx.accounts.pool,
             user,
             user_store,
+            &mut ctx.accounts.vault,
+            &mut ctx.accounts.cm_reward_per_token,
         )
         .unwrap();
 
@@ -452,6 +501,27 @@ pub mod nft_staking {
     pub fn close_user(ctx: Context<CloseUser>) -> Result<()> {
         let pool = &mut ctx.accounts.pool;
         pool.user_stake_count = pool.user_stake_count.checked_sub(1).unwrap();
+        Ok(())
+    }
+
+    pub fn close_n_account(ctx: Context<CloseNAccount>) -> Result<()> {
+        let pool = &ctx.accounts.pool;
+        let seeds = &[
+            pool.to_account_info().key.as_ref(),
+            &[pool.nonce],
+        ];
+        let pool_signer = &[&seeds[..]];
+        anchor_spl::token::close_account(
+            CpiContext::new_with_signer(
+                ctx.accounts.token_program.to_account_info(),
+                anchor_spl::token::CloseAccount{
+                    account: ctx.accounts.close_account.to_account_info(),
+                    destination: ctx.accounts.owner.to_account_info(),
+                    authority: ctx.accounts.pool_signer.to_account_info(),
+                },
+                pool_signer
+        ))?;
+
         Ok(())
     }
 
@@ -562,17 +632,16 @@ pub mod nft_staking {
 #[derive(Accounts)]
 #[instruction(pool_nonce: u8, vault_nonce: u8)]
 pub struct InitializePool<'info> {
+    /// CHECK: This is pool authority account
     authority: UncheckedAccount<'info>,
 
     #[account(
         mut,
-        // constraint = lp_token_pool_vault.mint == LP_TOKEN_MINT_PUBKEY.parse::<Pubkey>().unwrap(),
         constraint = lp_token_pool_vault.owner == pool_signer.key(),
     )]
     lp_token_pool_vault: Box<Account<'info, TokenAccount>>,
     #[account(
         mut,
-        // constraint = lp_token_depositor.mint == LP_TOKEN_MINT_PUBKEY.parse::<Pubkey>().unwrap()
     )]
     lp_token_depositor: Box<Account<'info, TokenAccount>>,
     lp_token_deposit_authority: Signer<'info>,
@@ -591,6 +660,7 @@ pub struct InitializePool<'info> {
         ],
         bump = pool_nonce,
     )]
+    /// CHECK: This is pool signer with seeds
     pool_signer: UncheckedAccount<'info>,
 
     #[account(
@@ -604,10 +674,11 @@ pub struct InitializePool<'info> {
             owner.key.as_ref(), 
             pool.to_account_info().key.as_ref()
         ],
-        bump = vault_nonce,
+        bump,
         space = 10240,
     )]
     vault: Box<Account<'info, Vault>>,
+    #[account(mut)]
     owner: Signer<'info>,
     
     token_program: Program<'info, Token>,
@@ -623,6 +694,53 @@ pub struct SetRewardPerToken<'info> {
         constraint = !pool.paused,
     )]
     pool: Box<Account<'info, Pool>>,
+    authority: Signer<'info>,
+    // Misc.
+    system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(nonce: u8)]
+pub struct CreateCandyMachineRewardPerToken<'info> {
+    // Stake instance.
+    #[account(
+        has_one = authority,
+        constraint = !pool.paused,
+    )]
+    pool: Box<Account<'info, Pool>>,
+    #[account(
+        init,
+        payer = authority,
+        seeds = [
+            pool.to_account_info().key.as_ref(),
+            "reward_per_token".as_bytes(),
+        ],
+        bump,
+        space = 10240,
+    )]
+    cm_reward_per_token: Box<Account<'info, CandyMachineRewardPerToken>>,
+    #[account(mut)]
+    authority: Signer<'info>,
+    // Misc.
+    system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct SetCandyMachineRewardPerToken<'info> {
+    #[account(
+        has_one = authority,
+        constraint = !pool.paused,
+    )]
+    pool: Box<Account<'info, Pool>>,
+    #[account(
+        mut,
+        seeds = [
+            pool.to_account_info().key.as_ref(),
+            "reward_per_token".as_bytes(),
+        ],
+        bump = cm_reward_per_token.nonce,
+    )]
+    cm_reward_per_token: Box<Account<'info, CandyMachineRewardPerToken>>,
     authority: Signer<'info>,
     // Misc.
     system_program: Program<'info, System>,
@@ -646,7 +764,7 @@ pub struct CreateUser<'info> {
             pool.to_account_info().key.as_ref(),
             "user".as_bytes()
         ],
-        bump = nonce,
+        bump,
     )]
     user: Box<Account<'info, User>>,
     #[account(
@@ -658,10 +776,11 @@ pub struct CreateUser<'info> {
             "user".as_bytes(),
             &[1]
         ],
-        bump = store_nonce,
+        bump,
         space = 10240
     )]
     user_store: Box<Account<'info, UserStore>>,
+    #[account(mut)]
     owner: Signer<'info>,
     // Misc.
     system_program: Program<'info, System>,
@@ -695,10 +814,11 @@ pub struct CreateUserStore<'info> {
             "user".as_bytes(),
             &[user.stores + 1]
         ],
-        bump = nonce,
+        bump,
         space = 10240
     )]
     user_store: Box<Account<'info, UserStore>>,
+    #[account(mut)]
     owner: Signer<'info>,
     // Misc.
     system_program: Program<'info, System>,
@@ -726,6 +846,7 @@ pub struct Pause<'info> {
         ],
         bump = pool.nonce,
     )]
+    /// CHECK: This is pool signer with seeds
     pool_signer: UncheckedAccount<'info>,
     token_program: Program<'info, Token>,
 }
@@ -734,7 +855,6 @@ pub struct Pause<'info> {
 pub struct Unpause<'info> {
     #[account(
         mut,
-        constraint = lp_token_pool_vault.mint == LP_TOKEN_MINT_PUBKEY.parse::<Pubkey>().unwrap(),
         constraint = lp_token_pool_vault.owner == pool_signer.key(),
     )]
     // #[account(
@@ -744,7 +864,6 @@ pub struct Unpause<'info> {
     lp_token_pool_vault: Box<Account<'info, TokenAccount>>,
     #[account(
         mut,
-        constraint = lp_token_depositor.mint == LP_TOKEN_MINT_PUBKEY.parse::<Pubkey>().unwrap()
     )]
     // #[account(
     //     mut,
@@ -766,6 +885,7 @@ pub struct Unpause<'info> {
         ],
         bump = pool.nonce,
     )]
+    /// CHECK: This is pool signer with seeds
     pool_signer: UncheckedAccount<'info>,
     token_program: Program<'info, Token>,
 }
@@ -774,13 +894,11 @@ pub struct Unpause<'info> {
 pub struct DepositStake<'info> {
     #[account(
         mut,
-        // constraint = lp_token_pool_vault.mint == LP_TOKEN_MINT_PUBKEY.parse::<Pubkey>().unwrap(),
         constraint = lp_token_pool_vault.owner == pool_signer.key(),
     )]
     lp_token_pool_vault: Box<Account<'info, TokenAccount>>,
     #[account(
         mut,
-        // constraint = lp_token_depositor.mint == LP_TOKEN_MINT_PUBKEY.parse::<Pubkey>().unwrap()
     )]
     lp_token_depositor: Box<Account<'info, TokenAccount>>,
     lp_token_deposit_authority: Signer<'info>,
@@ -798,6 +916,7 @@ pub struct DepositStake<'info> {
         ],
         bump = pool.nonce,
     )]
+    /// CHECK: This is pool signer with seeds
     pool_signer: UncheckedAccount<'info>,
     token_program: Program<'info, Token>,
 }
@@ -811,7 +930,6 @@ pub struct DepositReward<'info> {
     reward_vault: Box<Account<'info, TokenAccount>>,
     #[account(
         mut,
-        // constraint = lp_token_depositor.mint == LP_TOKEN_MINT_PUBKEY.parse::<Pubkey>().unwrap()
     )]
     reward_depositor: Box<Account<'info, TokenAccount>>,
     reward_deposit_authority: Signer<'info>,
@@ -829,6 +947,7 @@ pub struct DepositReward<'info> {
         ],
         bump = pool.nonce,
     )]
+    /// CHECK: This is pool signer with seeds
     pool_signer: UncheckedAccount<'info>,
     token_program: Program<'info, Token>,
 }
@@ -876,14 +995,23 @@ pub struct Stake<'info> {
         bump = user_store.nonce,
     )]
     user_store: Box<Account<'info, UserStore>>,
+    #[account(
+        mut,
+        seeds = [
+            pool.to_account_info().key.as_ref(),
+            "reward_per_token".as_bytes(),
+        ],
+        bump = cm_reward_per_token.nonce,
+    )]
+    cm_reward_per_token: Box<Account<'info, CandyMachineRewardPerToken>>,
     owner: Signer<'info>,
     #[account(mut)]
     stake_from_account: Box<Account<'info, TokenAccount>>,
+    /// CHECK: This is nft metadata account. 
     metadata_info: UncheckedAccount<'info>,
 
     #[account(
         mut,
-        // constraint = lp_token_pool_vault.mint == LP_TOKEN_MINT_PUBKEY.parse::<Pubkey>().unwrap(),
         constraint = lp_token_pool_vault.owner == pool_signer.key(),
     )]
     lp_token_pool_vault: Box<Account<'info, TokenAccount>>,
@@ -896,6 +1024,7 @@ pub struct Stake<'info> {
         ],
         bump = pool.nonce,
     )]
+    /// CHECK: This is pool signer with seeds
     pool_signer: UncheckedAccount<'info>,
 
     // Misc.
@@ -930,6 +1059,15 @@ pub struct ClaimReward<'info> {
         bump = user.nonce,
     )]
     user: Box<Account<'info, User>>,
+    #[account(
+        mut,
+        seeds = [
+            pool.to_account_info().key.as_ref(),
+            "reward_per_token".as_bytes(),
+        ],
+        bump = cm_reward_per_token.nonce,
+    )]
+    cm_reward_per_token: Box<Account<'info, CandyMachineRewardPerToken>>,
     // User Store.
     #[account(
         mut,
@@ -954,6 +1092,7 @@ pub struct ClaimReward<'info> {
         ],
         bump = pool.nonce,
     )]
+    /// CHECK: This is pool signer with seeds
     pool_signer: UncheckedAccount<'info>,
 
     // Misc.
@@ -988,6 +1127,7 @@ pub struct WithdrawStake<'info> {
         ],
         bump = pool.nonce,
     )]
+    /// CHECK: This is pool signer with seeds
     pool_signer: UncheckedAccount<'info>,
 
     // Misc.
@@ -1022,10 +1162,28 @@ pub struct WithdrawReward<'info> {
         ],
         bump = pool.nonce,
     )]
+    /// CHECK: This is pool signer with seeds
     pool_signer: UncheckedAccount<'info>,
 
     // Misc.
     token_program: Program<'info, Token>,
+}
+
+#[derive(Accounts)]
+pub struct CloseNAccount<'info> {
+    pool: Box<Account<'info, Pool>>,
+    #[account(
+        seeds = [
+            pool.to_account_info().key.as_ref()
+        ],
+        bump = pool.nonce,
+    )]
+    /// CHECK: This is pool signer with seeds
+    pool_signer: UncheckedAccount<'info>,
+    close_account: Box<Account<'info, TokenAccount>>,
+    owner: Signer<'info>,
+    token_program: Program<'info, Token>,
+    system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
@@ -1120,6 +1278,13 @@ pub struct Vault {
     pub candy_machines: Vec<Pubkey>,
     pub reward_types: Vec<u8>,
     pub is_verify: Vec<bool>,
+    pub nonce: u8,
+}
+
+#[account]
+pub struct CandyMachineRewardPerToken {
+    pub candy_machines: Vec<Pubkey>,
+    pub reward_per_tokens: Vec<u64>,
     pub nonce: u8,
 }
 
