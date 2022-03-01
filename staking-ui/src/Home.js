@@ -68,6 +68,7 @@ const Home = () => {
     const { connection } = useConnection();
     const { publicKey, signTransaction } = useWallet();
     const wallet = useWallet();
+    console.log(totalStaked)
 
     async function getProvider() {
         const provider = new anchor.Provider(
@@ -704,7 +705,7 @@ const Home = () => {
                                         <div>Pending Rewards: {pendingRewards} $BNTY</div>
                                     </li>
                                     <li class="mobile-menu-item" role="menuitem">
-                                        <div>Total Staked: 59%</div>
+                                        <div>60% of Bounty Hunters Staked</div>
                                     </li>
                                     <li class="mobile-menu-item" role="menuitem">
                                         <div>My Total Staked: {stakedNfts}</div>
@@ -735,7 +736,7 @@ const Home = () => {
                             <Col style={{ textAlign: 'right' }}>
                                 <Row style={{ minWidth: 850 }}>
                                     <Col style={{ whiteSpace: "nowrap" }}>
-                                        <div className="pendding-rewards">59% of Bounty Hunters Staked</div>
+                                        <div className="pendding-rewards">60% of Bounty Hunters Staked</div>
                                         <div className="pendding-rewards">My Total Staked: {stakedNfts} NFTs</div>
                                     </Col>
                                     <Col style={{ whiteSpace: "nowrap" }}>
