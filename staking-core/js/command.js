@@ -326,7 +326,7 @@ const createCandyMachineRewardPerToken = async () => {
         ],
         program.programId
     );
-    
+
     await program.rpc.createCandyMachineRewardPerToken(nonce, {
         accounts: {
             // Stake instance.
@@ -402,6 +402,24 @@ const removeCandyMachineRewardPerToken = async () => {
     });
 }
 
+const updateAuthority = async () => {
+    if (!values[0]) {
+        console.log('Missing an arguments.\n\nyarn update_authority <NEW_AUTHORITY>');
+        return;
+    }
+
+    const authority = new anchor.web3.PublicKey(values[0]);
+
+    await program.rpc.updateAuthority(authority, {
+        accounts: {
+            // Stake instance.
+            pool: poolKeypair.publicKey,
+            authority: provider.wallet.publicKey,
+            systemProgram: anchor.web3.SystemProgram.programId,
+        },
+    });
+}
+
 console.log("Program ID: ", programID.toString());
 console.log("Wallet: ", provider.wallet.publicKey.toString());
 
@@ -412,10 +430,11 @@ const commandID = argv.indexOf('--command_id=1') > -1 ? 1 :
                 argv.indexOf('--command_id=5') > -1 ? 5 :
                     argv.indexOf('--command_id=6') > -1 ? 6 :
                         argv.indexOf('--command_id=7') > -1 ? 7 :
-                        argv.indexOf('--command_id=8') > -1 ? 8 :
-                        argv.indexOf('--command_id=9') > -1 ? 9 :
-                        argv.indexOf('--command_id=10') > -1 ? 10 :
-                            argv.indexOf('--command_id=11') > -1 ? 11 : -1;
+                            argv.indexOf('--command_id=8') > -1 ? 8 :
+                                argv.indexOf('--command_id=9') > -1 ? 9 :
+                                    argv.indexOf('--command_id=10') > -1 ? 10 :
+                                        argv.indexOf('--command_id=11') > -1 ? 11 :
+                                            argv.indexOf('--command_id=12') > -1 ? 12 : -1;
 switch (commandID) {
     case 1:
         setRewardPerToken();
@@ -449,6 +468,9 @@ switch (commandID) {
         break;
     case 11:
         removeCandyMachineRewardPerToken();
+        break;
+    case 12:
+        updateAuthority();
         break;
     default:
         console.log('Unrecognized command');

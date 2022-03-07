@@ -17,7 +17,8 @@
         "deposit_reward_token": "node js/command.js --command_id=8",
         "create_cm_reward_per_token": "node js/command.js --command_id=9",
         "set_cm_reward_per_token": "node js/command.js --command_id=10",
-        "remove_cm_reward_per_token": "node js/command.js --command_id=11"
+        "remove_cm_reward_per_token": "node js/command.js --command_id=11",
+        "update_authority": "node js/command.js --command_id=12"
     },
     "keywords": [],
     "author": "",

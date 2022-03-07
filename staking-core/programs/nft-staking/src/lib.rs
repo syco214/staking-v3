@@ -96,6 +96,12 @@ pub mod nft_staking {
         Ok(())
     }
 
+    pub fn update_authority(ctx: Context<UpdateAuthority>, authority: Pubkey) -> Result<()> {
+        let pool = &mut ctx.accounts.pool;
+        pool.authority = authority;
+        Ok(())
+    }
+
     pub fn set_reward_per_token(ctx: Context<SetRewardPerToken>, reward_per_token: u64) -> Result<()> {
         let pool = &mut ctx.accounts.pool;
         pool.reward_per_token = reward_per_token;
@@ -687,6 +693,20 @@ pub struct InitializePool<'info> {
 
 #[derive(Accounts)]
 pub struct SetRewardPerToken<'info> {
+    // Stake instance.
+    #[account(
+        mut,
+        has_one = authority,
+        constraint = !pool.paused,
+    )]
+    pool: Box<Account<'info, Pool>>,
+    authority: Signer<'info>,
+    // Misc.
+    system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct UpdateAuthority<'info> {
     // Stake instance.
     #[account(
         mut,

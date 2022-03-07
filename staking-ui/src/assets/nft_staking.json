@@ -507,16 +507,6 @@
           "isSigner": false
         },
         {
-          "name": "lpTokenPoolVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "lpTokenReceiver",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "poolSigner",
           "isMut": false,
           "isSigner": false
@@ -575,16 +565,6 @@
         {
           "name": "metadataInfo",
           "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "lpTokenPoolVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "lpTokenReceiver",
-          "isMut": true,
           "isSigner": false
         },
         {
@@ -1090,6 +1070,6 @@
     }
   ],
   "metadata": {
-    "address": "D3k7Rsm8RWMU2Q5sRNfwsDCsv7G5jkF8DZtDfZqDUS7k"
+    "address": "3YiBLWJFZt94mshvr8Kb6zvxfCu4D5rVZUyFpMVyEhJ4"
   }
 }
