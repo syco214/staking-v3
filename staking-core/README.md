@@ -160,3 +160,10 @@ Your wallet have to contain some SOL on mainnet.
 #### NOTE: Before run this command, pls update `js/command.js` line 19 to your stake token identify address.
 #### NOTE: If you want to run this command on devnet, you need to add `--env devnet`.
 #### NOTE: local wallet must become pool owner wallet.
+
+### Update Authority
+
+`yarn update_authority <NEW_AUTHORITY>`
+
+#### NOTE: If you want to run this command on devnet, you need to add `--env devnet`.
+#### NOTE: local wallet must become pool owner wallet.
