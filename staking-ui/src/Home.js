@@ -218,6 +218,7 @@ const Home = () => {
                 val.creator = data[i].data.creators[0].address;
                 val.creators = data[i].data.creators;
                 val.storeId = data[i].storeId;
+                val.stakedDays = data[i].stakedDays;
                 arr.push(val);
             }
             console.log(arr)
