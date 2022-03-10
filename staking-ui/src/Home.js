@@ -121,6 +121,7 @@ const Home = () => {
                     metadataDecoded['staked'] = true;
                     metadataDecoded['mint'] = storeObject.nftMints[j].toBase58();
                     metadataDecoded['storeId'] = storeObject.storeId;
+                    metadataDecoded['stakedDays'] = parseInt(((new Date().getTime()) / 1000 - storeObject.stakedTimes[j].toNumber()) / 24 / 3600);
 
                     stakedNfts.push(metadataDecoded);
                 }
@@ -623,6 +624,19 @@ const Home = () => {
                                     // }
                                     return (
                                         <Col key={ind} xs="6" sm="6" md="4" lg="4" xl="4" style={{ textAlign: 'center' }} className={(val.staked === true ? 'staked' : 'unstaked')}>
+                                            {
+                                                isMobile ? null : (
+                                                    val.staked === true ?
+                                                        <Button
+                                                            color="warning"
+                                                            outline
+                                                            onClick={() => unStakeNFT(val)}
+                                                            className="nft-button2"
+                                                        >
+                                                            {val.stakedDays} days staked
+                                                        </Button> :
+                                                        null)
+                                            }
                                             <Card className={"nft-card"}>
                                                 <CardImg
                                                     alt="Card image cap"

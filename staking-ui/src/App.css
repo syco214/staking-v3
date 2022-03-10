@@ -51,6 +51,22 @@ body {
   border-style: solid;
 }
 
+.nft-button2 {
+  border: 0;
+  width: 120px;
+  position: absolute;
+  margin-top: 15px;
+  font-size: 10px;
+  border-radius: 10px;
+  padding: 5px;
+  background: rgb(31, 31, 31);
+  color: #878787;
+  font-weight: 400;
+  transform: translate(-50%, 0%);
+  font-family: "Saira", sans-serif;
+  font-weight: 300;
+}
+
 .nft-button {
   border: 0;
   width: 120px;
@@ -74,6 +90,11 @@ body {
 }
 
 .staked .nft-button {
+  background: linear-gradient(90deg, rgba(242, 122, 38, 1) 0%, rgba(255, 91, 0, 1) 25%, rgba(255, 139, 0, 1) 100%);
+  color: #1d1d1d;
+}
+
+.staked .nft-button2 {
   background: linear-gradient(90deg, rgba(242, 122, 38, 1) 0%, rgba(255, 91, 0, 1) 25%, rgba(255, 139, 0, 1) 100%);
   color: #1d1d1d;
 }
