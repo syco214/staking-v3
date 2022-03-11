@@ -2,6 +2,8 @@ import React, { useEffect, useCallback, useState } from 'react';
 import { isMobile } from 'react-device-detect';
 import * as anchor from "@project-serum/anchor";
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import ReactTooltip from 'react-tooltip';
+import {AiOutlineInfoCircle} from 'react-icons/ai'
 import {
     PublicKey,
     SystemProgram,
@@ -123,6 +125,8 @@ const Home = () => {
                     metadataDecoded['staked'] = true;
                     metadataDecoded['mint'] = storeObject.nftMints[j].toBase58();
                     metadataDecoded['storeId'] = storeObject.storeId;
+                    metadataDecoded['stakedDays'] = parseInt(((new Date().getTime()) / 1000 - storeObject.stakedTimes[j].toNumber()) / 24 / 3600 - 23);
+                    console.log(metadataDecoded);
 
                     stakedNfts.push(metadataDecoded);
                 }
@@ -218,7 +222,7 @@ const Home = () => {
                 val.staked = data[i].staked;
                 val.creator = data[i].data.creators[0].address;
                 val.creators = data[i].data.creators;
-                val.storeId = data[i].storeId;
+                val.stakedDays = data[i].stakedDays;
                 arr.push(val);
             }
             console.log(arr)
@@ -632,7 +636,13 @@ const Home = () => {
                                                             color="Dark"
                                                             className="nft-head"
                                                         >
-                                                            {val.data.name}
+                                                            {val.data.name} &nbsp;
+                                                            <a data-tip data-for='stakeDays'> 
+                                                                <AiOutlineInfoCircle/>
+                                                            </a>
+                                                            <ReactTooltip id="stakeDays" place="top" type="success" effect="solid" backgroundColor="orangered">
+                                                                <span>{val.stakedDays} Days Staked for ETH Launch</span>
+                                                            </ReactTooltip>
                                                         </Badge> :
                                                         <Badge
                                                             color="Dark"
