@@ -420,6 +420,65 @@ const updateAuthority = async () => {
     });
 }
 
+const exportCsv = async () => {
+    const wallets = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../wallets.json')));
+    let result = "wallet,mint,staked days";
+    for (const wallet of wallets) {
+        const walletPubKey = new anchor.web3.PublicKey(wallet);
+        const [userPubkey] = await getStakeUserPubkey(walletPubKey);
+
+        const userObject = await program.account.user.fetch(userPubkey);
+        for (let i = 0; i < userObject.stores; i++) {
+            const [storePubkey] = await getStakeUserStorePubkey(walletPubKey, i + 1);
+            const storeObject = await program.account.userStore.fetch(storePubkey);
+            for (let j = 0; j < storeObject.nftMints.length; j++) {
+                result += `\n${wallet},${storeObject.nftMints[j].toBase58()},${parseInt(((new Date().getTime()) / 1000 - storeObject.stakedTimes[j].toNumber()) / 24 / 3600)}`;
+            }
+        }
+    }
+
+    fs.writeFile(path.resolve(__dirname, '../statistic.csv'), result);
+    console.log("Saved to " + path.resolve(__dirname, '../statistic.csv'));
+}
+
+async function getStakeUserPubkey(walletPubkey) {
+    return await anchor.web3.PublicKey.findProgramAddress(
+        [walletPubkey.toBuffer(), poolKeypair.publicKey.toBuffer(), (new TextEncoder().encode('user'))],
+        programID
+    );
+}
+
+async function getStakeUserStorePubkey(walletPubkey, storeId) {
+    return await anchor.web3.PublicKey.findProgramAddress(
+        [walletPubkey.toBuffer(), poolKeypair.publicKey.toBuffer(), (new TextEncoder().encode('user')), [storeId]],
+        programID
+    );
+}
+
+async function getPoolSigner() {
+    return await anchor.web3.PublicKey.findProgramAddress(
+        [poolKeypair.publicKey.toBuffer()],
+        programID
+    );
+}
+
+async function getVaultPubkey() {
+    return await anchor.web3.PublicKey.findProgramAddress(
+        [funderPublicKey.toBuffer(), poolKeypair.publicKey.toBuffer()],
+        programID
+    );
+}
+
+async function getCmPerTokenRewards() {
+    return await PublicKey.findProgramAddress(
+        [
+            poolKeypair.publicKey.toBuffer(),
+            (new TextEncoder().encode('reward_per_token'))
+        ],
+        programID
+    );
+
+}
 console.log("Program ID: ", programID.toString());
 console.log("Wallet: ", provider.wallet.publicKey.toString());
 
@@ -434,7 +493,8 @@ const commandID = argv.indexOf('--command_id=1') > -1 ? 1 :
                                 argv.indexOf('--command_id=9') > -1 ? 9 :
                                     argv.indexOf('--command_id=10') > -1 ? 10 :
                                         argv.indexOf('--command_id=11') > -1 ? 11 :
-                                            argv.indexOf('--command_id=12') > -1 ? 12 : -1;
+                                            argv.indexOf('--command_id=12') > -1 ? 12 :
+                                                argv.indexOf('--command_id=13') > -1 ? 13 : -1;
 switch (commandID) {
     case 1:
         setRewardPerToken();
@@ -471,6 +531,9 @@ switch (commandID) {
         break;
     case 12:
         updateAuthority();
+        break;
+    case 13:
+        exportCsv();
         break;
     default:
         console.log('Unrecognized command');
