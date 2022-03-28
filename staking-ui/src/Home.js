@@ -183,7 +183,7 @@ const Home = () => {
             setPendingRewards((a / anchor.web3.LAMPORTS_PER_SOL).toFixed(1));
         } catch (err) {
             console.error(err.message);
-            console.log("There is no staked NFTs");
+            console.log("Insufficient SOL Balance, please try again");
         }
     }
 
@@ -249,7 +249,7 @@ const Home = () => {
         const nftCreator = vaultObject.candyMachines.find((cm) => cm.toBase58() === metaNFT.creator);
 
         if (!nftCreator) {
-            alert("No match candy machine. Pool has not candymachine id. " + metaNFT.creator);
+            alert("Candy Machine ID does not match, NFT cannot be staked. " + metaNFT.creator);
             return;
         }
 
@@ -314,14 +314,14 @@ const Home = () => {
         const nftOwnerAccounts = await provider.connection.getTokenAccountsByOwner(walletPubkey, { mint: nftMint.publicKey });
         let nftAccount;
         if (nftOwnerAccounts.value.length == 0) {
-            alert("This nft is not your nft.");
+            alert("Insufficient SOL Balance, please try again");
             return;
         }
         else {
             nftAccount = nftOwnerAccounts.value[0].pubkey;
             const nftBalance = await provider.connection.getTokenAccountBalance(nftAccount);
             if (nftBalance.value.uiAmount === 0) {
-                alert("This nft is not your nft.");
+                alert("Insufficient SOL Balance, please try again");
             }
         }
 
@@ -356,7 +356,7 @@ const Home = () => {
                 toTokenAccount = toTokenAccountObject.address;
             } catch (error) {
                 if (error.message === 'TokenAccountNotFoundError' || error.message === 'TokenInvalidAccountOwnerError') {
-                    alert("Need to create stake account.");
+                    alert("Insufficient SOL Balance, please try again");
                     return;
                 }
             }
@@ -396,7 +396,7 @@ const Home = () => {
             await setNftTokenData(walletPubkey);
             setLoading(true);
         } catch (err) {
-            alert("Something went wrong! Please try again.");
+            alert("Insufficient SOL Balance, please try again");
         }
     }
 
@@ -419,7 +419,7 @@ const Home = () => {
             var claimeAmount = await claimRewardsCore(vaultPublicKey);
             console.log(claimeAmount);
         } else {
-            console.log("There is no staked NFTs");
+            console.log("Insufficient SOL Balance, please try again");
         }
     }
 
