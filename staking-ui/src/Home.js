@@ -125,7 +125,7 @@ const Home = () => {
                     metadataDecoded['staked'] = true;
                     metadataDecoded['mint'] = storeObject.nftMints[j].toBase58();
                     metadataDecoded['storeId'] = storeObject.storeId;
-                    metadataDecoded['stakedDays'] = parseInt(((new Date().getTime()) / 1000 - storeObject.stakedTimes[j].toNumber()) / 24 / 3600 - 23);
+                    metadataDecoded['stakedDays'] = parseInt(((new Date().getTime()) / 1000 - storeObject.stakedTimes[j].toNumber()) / 24 / 3600);
                     console.log(metadataDecoded);
 
                     stakedNfts.push(metadataDecoded);
@@ -642,7 +642,7 @@ const Home = () => {
                                                                 <AiOutlineInfoCircle/>
                                                             </a>
                                                             <ReactTooltip id="stakeDays" place="top" type="success" effect="solid" backgroundColor="orangered">
-                                                                <span>{val.stakedDays} Days Staked for ETH Launch</span>
+                                                                <span>{val.stakedDays} Total Days Staked</span>
                                                             </ReactTooltip>
                                                         </Badge> :
                                                         <Badge
