@@ -637,13 +637,7 @@ const Home = () => {
                                                             color="Dark"
                                                             className="nft-head"
                                                         >
-                                                            {val.data.name} &nbsp;
-                                                            <a data-tip data-for='stakeDays'> 
-                                                                <AiOutlineInfoCircle/>
-                                                            </a>
-                                                            <ReactTooltip id="stakeDays" place="top" type="success" effect="solid" backgroundColor="orangered">
-                                                                <span>{val.stakedDays} Total Days Staked</span>
-                                                            </ReactTooltip>
+                                                            {val.data.name}
                                                         </Badge> :
                                                         <Badge
                                                             color="Dark"
