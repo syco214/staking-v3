@@ -10,7 +10,7 @@ url = "https://anchor.projectserum.com"
 
 [provider]
 cluster = "mainnet"
-wallet = "/Users/sageco/.config/solana/id.json"
+wallet = "/Users/sageco/.config/solana/BHSG8XeaKU74g5d7MEFSj4HjM5yoPKrQ6Lzhc9uLcSv1.json"
 
 [scripts]
 test = "mocha -t 1000000 tests/"
