@@ -710,7 +710,7 @@ const Home = () => {
                                         <div>Pending Rewards: {pendingRewards} $BNTY</div>
                                     </li>
                                     <li class="mobile-menu-item" role="menuitem">
-                                        <div>72% of Bounty Hunters Staked</div>
+                                        <div>74% of Bounty Hunters Staked</div>
                                     </li>
                                     <li class="mobile-menu-item" role="menuitem">
                                         <div>My Total Staked: {stakedNfts}</div>
@@ -741,7 +741,7 @@ const Home = () => {
                             <Col style={{ textAlign: 'right' }}>
                                 <Row style={{ minWidth: 850 }}>
                                     <Col style={{ whiteSpace: "nowrap" }}>
-                                        <div className="pendding-rewards">72% of Bounty Hunters Staked</div>
+                                        <div className="pendding-rewards">74% of Bounty Hunters Staked</div>
                                         <div className="pendding-rewards">My Total Staked: {stakedNfts} NFTs</div>
                                     </Col>
                                     <Col style={{ whiteSpace: "nowrap" }}>
