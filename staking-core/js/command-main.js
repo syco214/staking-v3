@@ -14,7 +14,7 @@ const walletKeyData = JSON.parse(fs.readFileSync(os.homedir() + '/.config/solana
 const walletKeypair = anchor.web3.Keypair.fromSecretKey(new Uint8Array(walletKeyData));
 const wallet = new anchor.Wallet(walletKeypair);
 
-let ANCHOR_PROVIDER_URL = 'https://blue-delicate-wildflower.solana-mainnet.quiknode.pro/2f054b4c3a7d3f8841b584875204e3aa7c42d8ab/';
+let ANCHOR_PROVIDER_URL = 'https://polished-young-shadow.solana-mainnet.quiknode.pro/c59fd0b3ecb9cca43b39fbb5a437e26166d0676d/';
 let STAKE_TOKEN = 'Gab5Qpgcppf3aLQCu6c34WSGiTEEMGdF3XQeuoDUijpK';
 let REWARD_TOKEN = '2bL6yZANaMdW3KUbj8qUEkQPK77x5ScUCWxUgcLMxAm2';
 
