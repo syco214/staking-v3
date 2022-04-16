@@ -519,9 +519,13 @@ const Home = () => {
         const [userPubkey] = await getStakeUserPubkey(provider.wallet.publicKey);
         const [storePubkey] = await getStakeUserStorePubkey(provider.wallet.publicKey, mintObj.storeId);
         const [cmRewardPerToken] = await getCmPerTokenRewards();
+        const userStore = await program.account.userStore.fetch(storePubkey);
+        const nftMints = userStore.nftMints.map(mint => mint.toBase58());
+        const idx = nftMints.findIndex(nft => nft === (mintObj.mint));
         // console.log(mintObj); return;
         try {
             await program.rpc.unstake(
+                idx,
                 {
                     accounts: {
                         // Stake instance.
@@ -551,6 +555,7 @@ const Home = () => {
             await setNftTokenData(provider.wallet.publicKey);
         } catch (e) {
             alert("Something when wrong. Try again");
+            console.log(e);
         }
         setLoading(true);
     }

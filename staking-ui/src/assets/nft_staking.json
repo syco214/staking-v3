@@ -598,7 +598,12 @@
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "index",
+          "type": "u8"
+        }
+      ]
     },
     {
       "name": "claim",
@@ -673,42 +678,6 @@
           "name": "owner",
           "isMut": false,
           "isSigner": true
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "closeNAccount",
-      "accounts": [
-        {
-          "name": "pool",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "poolSigner",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "closeAccount",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "owner",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
         }
       ],
       "args": []
@@ -1085,11 +1054,11 @@
           {
             "name": "NotFoundCandyMachine"
           }
-        ]
+        ],
+        "metadata": {
+          "address": "D3k7Rsm8RWMU2Q5sRNfwsDCsv7G5jkF8DZtDfZqDUS7k"
+        }
       }
     }
-  ],
-  "metadata": {
-    "address": "D3k7Rsm8RWMU2Q5sRNfwsDCsv7G5jkF8DZtDfZqDUS7k"
-  }
+  ]
 }
