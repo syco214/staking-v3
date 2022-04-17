@@ -33,6 +33,15 @@ body {
   font-weight: bold;
 }
 
+.App-header2 {
+  font-size: calc(10px + 2vmin);
+  color: white;
+  padding: 30px 30px;
+  text-align: center;
+  font-family: "Saira Extra Condensed", sans-serif;
+  font-weight: bold;
+}
+
 .App-link {
   color: #61dafb;
 }

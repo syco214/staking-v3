@@ -620,8 +620,11 @@ const Home = () => {
         <div className="main">
             <Row style={{ margin: 0 }}>
                 <div className="App-header">
-                    BOUNTY HUNTER SPACE GUILD COMMAND CENTER V1
+                    (DEPRECIATED) BOUNTY HUNTER SPACE GUILD COMMAND CENTER V1
                 </div>
+                <a className="App-header2" href="https://staking.bountyhunterspaceguild.com/">
+                    PLEASE STAKE BOUNTY HUNTERS HERE.
+                </a>
             </Row>
             <Container>
                 <Row>
@@ -659,13 +662,6 @@ const Home = () => {
                                                     top
                                                     width="100px"
                                                     alt="Not found"
-                                                    onClick={() => {
-                                                        if (val.staked) {
-                                                            unStakeNFT(val);
-                                                        } else {
-                                                            stakeNFT(val);
-                                                        }
-                                                    }}
                                                 />
                                             </Card>
                                             {
@@ -679,14 +675,7 @@ const Home = () => {
                                                         >
                                                             UNSTAKE
                                                         </Button> :
-                                                        <Button
-                                                            color="info"
-                                                            outline
-                                                            onClick={() => stakeNFT(val)}
-                                                            className="nft-button"
-                                                        >
-                                                            CLICK TO STAKE
-                                                        </Button>)
+                                                        <></>)
                                             }
                                         </Col>
                                     );
