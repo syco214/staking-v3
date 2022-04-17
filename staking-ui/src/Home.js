@@ -2,8 +2,6 @@ import React, { useEffect, useCallback, useState } from 'react';
 import { isMobile } from 'react-device-detect';
 import * as anchor from "@project-serum/anchor";
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import ReactTooltip from 'react-tooltip';
-import {AiOutlineInfoCircle} from 'react-icons/ai'
 import {
     PublicKey,
     SystemProgram,
@@ -70,7 +68,6 @@ const Home = () => {
     const { connection } = useConnection();
     const { publicKey, signTransaction } = useWallet();
     const wallet = useWallet();
-    console.log(totalStaked)
 
     async function getProvider() {
         const provider = new anchor.Provider(
@@ -126,7 +123,6 @@ const Home = () => {
                     metadataDecoded['mint'] = storeObject.nftMints[j].toBase58();
                     metadataDecoded['storeId'] = storeObject.storeId;
                     metadataDecoded['stakedDays'] = parseInt(((new Date().getTime()) / 1000 - storeObject.stakedTimes[j].toNumber()) / 24 / 3600);
-                    console.log(metadataDecoded);
 
                     stakedNfts.push(metadataDecoded);
                 }
