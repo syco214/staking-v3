@@ -598,12 +598,7 @@
           "isSigner": false
         }
       ],
-      "args": [
-        {
-          "name": "index",
-          "type": "u8"
-        }
-      ]
+      "args": []
     },
     {
       "name": "claim",
