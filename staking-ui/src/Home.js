@@ -407,7 +407,9 @@ const Home = () => {
             if (storeObject.nftMints.length > 0) {
                 accountFalg = true;
             }
-        } catch (err) { }
+        } catch (err) { 
+            console.log(err)
+        }
 
         const [vaultPublicKey] = await getVaultPubkey();
 
@@ -461,7 +463,7 @@ const Home = () => {
             await confirmTransaction(instructions);
 
             let amt = await this.provider.connection.getTokenAccountBalance(rewardAccount.address);
-
+            console.log(amt)
             return amt.value.uiAmount;
         } catch (err) {
             return 0;
@@ -551,6 +553,7 @@ const Home = () => {
             await setNftTokenData(provider.wallet.publicKey);
         } catch (e) {
             alert("Something when wrong. Try again");
+            console.log(e);
         }
         setLoading(true);
     }
@@ -705,7 +708,6 @@ const Home = () => {
                                         <div>My Total Staked: {stakedNfts}</div>
                                     </li>
                                     <li class="mobile-menu-item" role="menuitem">
-                                        <Button className="btn-claim mobile" onClick={() => claimRewards()}>Claim Rewards</Button>
                                     </li>
                                     <li class="mobile-menu-item" role="menuitem">
                                         <WalletModalProvider>
@@ -738,7 +740,6 @@ const Home = () => {
                                         <div className="pendding-rewards">Pending Rewards: {pendingRewards} $BNTY</div>
                                     </Col>
                                     <Col>
-                                        <Button className="btn-claim" onClick={() => claimRewards()}>Claim Rewards</Button>
                                     </Col>
                                 </Row>
                             </Col>
