@@ -665,7 +665,7 @@ const Home = () => {
                                 </Button>
                                 <ul aria-label="dropdown-list" className={"mobile-menu" + (showMenu ? ' mobile-menu-active' : '')} role="menu">
                                     <li class="mobile-menu-item" role="menuitem">
-                                        <Button className="btn-claim mobile">Open a ticket in discord with a screenshot of pending rewards to claim</Button>
+                                        <Button className="btn-claim mobile" disabled={true}>Open a ticket in discord with a screenshot of pending rewards and your wallet address to claim</Button>
                                     </li>
                                     <li class="mobile-menu-item" role="menuitem">
                                         <WalletModalProvider>
@@ -696,7 +696,7 @@ const Home = () => {
                                         <div className="pendding-rewards">Pending Rewards: {pendingRewards} $BNTY</div>
                                     </Col>
                                     <Col>
-                                        <Button className="btn-claim" disabled={true}>Open a ticket in discord with a screenshot of pending rewards to claim</Button>
+                                        <Button className="btn-claim" disabled={true}>Open a ticket in discord with a screenshot of pending rewards and your wallet address to claim</Button>
                                     </Col>
                                 </Row>
                             </Col>
