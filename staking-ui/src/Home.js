@@ -666,7 +666,7 @@ const Home = () => {
                                 <ul aria-label="dropdown-list" className={"mobile-menu" + (showMenu ? ' mobile-menu-active' : '')} role="menu">
                                     <li class="mobile-menu-item" role="menuitem">
                                         <a href="https://forms.gle/dLqG9oFvX5b6TvFp7">
-                                            <Button className="btn-claim mobile" disabled={true}>Fill up this form to claim</Button>  
+                                            <Button className="btn-claim mobile" disabled={true}>Fill up this form to claim pending $BNTY</Button>  
                                         </a>
                                     </li>
                                     <li class="mobile-menu-item" role="menuitem">
@@ -699,7 +699,7 @@ const Home = () => {
                                     </Col>
                                     <Col>
                                         <a href="https://forms.gle/dLqG9oFvX5b6TvFp7">
-                                            <Button className="btn-claim">Fill up this form to claim  
+                                            <Button className="btn-claim">Fill up this form to claim pending $BNTY 
                                             </Button>
                                         </a>
                                     </Col>
