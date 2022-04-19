@@ -19,7 +19,8 @@ import {
     Col,
     Card,
     CardImg,
-    Button
+    Button,
+    Badge
 } from 'reactstrap';
 import axios from 'axios';
 import {
@@ -598,6 +599,23 @@ const Home = () => {
                                     }
                                     return (
                                         <Col key={ind} xs="6" sm="6" md="4" lg="4" xl="4" style={{ textAlign: 'center' }} className={(val.staked === true ? 'staked' : 'unstaked')}>
+                                            {
+                                                isMobile ? null : (
+                                                    val.staked === true ?
+                                                        <Badge
+                                                            color="Dark"
+                                                            className="nft-head"
+                                                        >
+                                                            {val.data.name}
+                                                        </Badge> :
+                                                        <Badge
+                                                            color="Dark"
+                                                            outline
+                                                            className="nft-head"
+                                                        >
+                                                            {val.data.name}
+                                                        </Badge>)
+                                            }
                                             <Card className={"nft-card"}>
                                                 <CardImg
                                                     alt="Card image cap"
@@ -605,6 +623,13 @@ const Home = () => {
                                                     top
                                                     width="100px"
                                                     alt="Not found"
+                                                    onClick={() => {
+                                                        if (val.staked) {
+                                                            unStakeNFT(val);
+                                                        } else {
+                                                            stakeNFT(val);
+                                                        }
+                                                    }}
                                                 />
                                             </Card>
                                             {
@@ -640,7 +665,7 @@ const Home = () => {
                                 </Button>
                                 <ul aria-label="dropdown-list" className={"mobile-menu" + (showMenu ? ' mobile-menu-active' : '')} role="menu">
                                     <li class="mobile-menu-item" role="menuitem">
-                                        <Button className="btn-claim mobile" onClick={() => claimRewards()}>Claim Rewards</Button>
+                                        <Button className="btn-claim mobile">Open a ticket in discord with a screenshot of pending rewards to claim</Button>
                                     </li>
                                     <li class="mobile-menu-item" role="menuitem">
                                         <WalletModalProvider>
@@ -671,7 +696,7 @@ const Home = () => {
                                         <div className="pendding-rewards">Pending Rewards: {pendingRewards} $BNTY</div>
                                     </Col>
                                     <Col>
-                                        <Button className="btn-claim" onClick={() => claimRewards()}>Claim Rewards</Button>
+                                        <Button className="btn-claim" disabled={true}>Open a ticket in discord with a screenshot of pending rewards to claim</Button>
                                     </Col>
                                 </Row>
                             </Col>
