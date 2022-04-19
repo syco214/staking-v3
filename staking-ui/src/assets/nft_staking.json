@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.0.0",
   "name": "nft_staking",
   "instructions": [
     {
@@ -52,7 +52,7 @@
         },
         {
           "name": "owner",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -104,103 +104,6 @@
       ]
     },
     {
-      "name": "createCandyMachineRewardPerToken",
-      "accounts": [
-        {
-          "name": "pool",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "cmRewardPerToken",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "authority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "nonce",
-          "type": "u8"
-        }
-      ]
-    },
-    {
-      "name": "setCandyMachineRewardPerToken",
-      "accounts": [
-        {
-          "name": "pool",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "cmRewardPerToken",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "candyMachine",
-          "type": "publicKey"
-        },
-        {
-          "name": "rewardPerToken",
-          "type": "u64"
-        }
-      ]
-    },
-    {
-      "name": "removeCandyMachineRewardPerToken",
-      "accounts": [
-        {
-          "name": "pool",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "cmRewardPerToken",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "candyMachine",
-          "type": "publicKey"
-        }
-      ]
-    },
-    {
       "name": "createUser",
       "accounts": [
         {
@@ -220,7 +123,7 @@
         },
         {
           "name": "owner",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -260,7 +163,7 @@
         },
         {
           "name": "owner",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -487,11 +390,6 @@
           "isSigner": false
         },
         {
-          "name": "cmRewardPerToken",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "owner",
           "isMut": false,
           "isSigner": true
@@ -558,11 +456,6 @@
           "isSigner": false
         },
         {
-          "name": "cmRewardPerToken",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "owner",
           "isMut": false,
           "isSigner": true
@@ -598,12 +491,7 @@
           "isSigner": false
         }
       ],
-      "args": [
-        {
-          "name": "index",
-          "type": "u8"
-        }
-      ]
+      "args": []
     },
     {
       "name": "claim",
@@ -625,11 +513,6 @@
         },
         {
           "name": "user",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "cmRewardPerToken",
           "isMut": true,
           "isSigner": false
         },
@@ -931,30 +814,6 @@
       }
     },
     {
-      "name": "CandyMachineRewardPerToken",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "candyMachines",
-            "type": {
-              "vec": "publicKey"
-            }
-          },
-          {
-            "name": "rewardPerTokens",
-            "type": {
-              "vec": "u64"
-            }
-          },
-          {
-            "name": "nonce",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
       "name": "User",
       "type": {
         "kind": "struct",
@@ -1027,38 +886,44 @@
       }
     }
   ],
-  "types": [
+  "errors": [
     {
-      "name": "ErrorCode",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "InsufficientFundUnstake"
-          },
-          {
-            "name": "AmountMustBeGreaterThanZero"
-          },
-          {
-            "name": "SingleStakeTokenBCannotBeFunded"
-          },
-          {
-            "name": "PoolPaused"
-          },
-          {
-            "name": "CandyNotMatch"
-          },
-          {
-            "name": "DurationTooShort"
-          },
-          {
-            "name": "NotFoundCandyMachine"
-          }
-        ],
-        "metadata": {
-          "address": "D3k7Rsm8RWMU2Q5sRNfwsDCsv7G5jkF8DZtDfZqDUS7k"
-        }
-      }
+      "code": 300,
+      "name": "InsufficientFundUnstake",
+      "msg": "Insufficient funds to unstake."
+    },
+    {
+      "code": 301,
+      "name": "AmountMustBeGreaterThanZero",
+      "msg": "Amount must be greater than zero."
+    },
+    {
+      "code": 302,
+      "name": "SingleStakeTokenBCannotBeFunded",
+      "msg": "Reward B cannot be funded - pool is single stake."
+    },
+    {
+      "code": 303,
+      "name": "PoolPaused",
+      "msg": "Pool is paused."
+    },
+    {
+      "code": 304,
+      "name": "CandyNotMatch",
+      "msg": "Duration cannot be shorter than one day."
+    },
+    {
+      "code": 305,
+      "name": "DurationTooShort",
+      "msg": "This nft was not created from our candy machine."
+    },
+    {
+      "code": 306,
+      "name": "NotFoundCandyMachine",
+      "msg": "Not found candy machine."
     }
-  ]
+  ],
+  "metadata": {
+    "address": "D3k7Rsm8RWMU2Q5sRNfwsDCsv7G5jkF8DZtDfZqDUS7k"
+  }
 }

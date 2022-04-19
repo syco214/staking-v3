@@ -19,8 +19,7 @@ import {
     Col,
     Card,
     CardImg,
-    Button,
-    Badge
+    Button
 } from 'reactstrap';
 import axios from 'axios';
 import {
@@ -47,7 +46,7 @@ import {
     funderPublicKey,
     programId
 } from "./config";
-import { getCmPerTokenRewards, getPoolSigner, getStakeUserPubkey, getStakeUserStorePubkey, getVaultPubkey } from './utils';
+import { getPoolSigner, getStakeUserPubkey, getStakeUserStorePubkey, getVaultPubkey } from './utils';
 
 const opts = {
     preflightCommitment: "processed"
@@ -92,7 +91,6 @@ const Home = () => {
 
     const getStakedNFTs = async () => {
         let [poolSigner] = await getPoolSigner();
-        console.log("poolSigner: ", poolSigner.toBase58())
         const nfts = await getParsedNftAccountsByOwner({
             publicAddress: poolSigner,
             connection: connection,
@@ -122,7 +120,6 @@ const Home = () => {
                     metadataDecoded['staked'] = true;
                     metadataDecoded['mint'] = storeObject.nftMints[j].toBase58();
                     metadataDecoded['storeId'] = storeObject.storeId;
-                    metadataDecoded['stakedDays'] = parseInt(((new Date().getTime()) / 1000 - storeObject.stakedTimes[j].toNumber()) / 24 / 3600);
 
                     stakedNfts.push(metadataDecoded);
                 }
@@ -140,16 +137,8 @@ const Home = () => {
 
     const getPendingRewardsFunc = async () => {
         const [userPubkey] = await getStakeUserPubkey(provider.wallet.publicKey);
-        const [cmRewardPerToken] = await getCmPerTokenRewards();
 
         let poolObject = await program.account.pool.fetch(poolPublicKey);
-        console.log(program.account)
-        let cmRewardPerTokenObject = await program.account.candyMachineRewardPerToken.fetch(cmRewardPerToken);
-        const [vaultPublicKey] = await getVaultPubkey();
-        const vaultObject = await program.account.vault.fetch(vaultPublicKey);
-        let vaultCms = vaultObject.candyMachines.map((cm) => cm.toBase58());
-        let candyMachines = cmRewardPerTokenObject.candyMachines.map((cm) => cm.toBase58());
-        console.log(candyMachines)
         try {
             const userObject = await program.account.user.fetch(userPubkey);
             var now = parseInt((new Date()).getTime() / 1000)
@@ -159,17 +148,8 @@ const Home = () => {
                 const [storePubkey] = await getStakeUserStorePubkey(provider.wallet.publicKey, i + 1);
                 const storeObject = await program.account.userStore.fetch(storePubkey);
                 for (let j = 0; j < storeObject.nftMints.length; j++) {
-                    let rewardPerToken = poolObject.rewardPerToken;
-                    let cmType = storeObject.types[j];
-                    let cmIndex = vaultObject.rewardTypes.indexOf(cmType);
-                    console.log(cmType, cmIndex, vaultObject.rewardTypes)
-                    console.log(vaultCms, cmRewardPerTokenObject.rewardPerTokens)
-                    if (cmIndex > -1 && candyMachines.indexOf(vaultCms[cmIndex]) > -1) {
-                        rewardPerToken = cmRewardPerTokenObject.rewardPerTokens[candyMachines.indexOf(vaultCms[cmIndex])];
-                    }
-                    console.log(rewardPerToken.toNumber())
                     let diffDays = now - storeObject.stakedTimes[j].toNumber();
-                    const d = rewardPerToken.toNumber() / storeObject.types[j];
+                    const d = poolObject.rewardPerToken.toNumber() / storeObject.types[j];
                     a += d * parseInt(diffDays / (24 * 60 * 60));
                     dd += d;
                 }
@@ -179,7 +159,7 @@ const Home = () => {
             setPendingRewards((a / anchor.web3.LAMPORTS_PER_SOL).toFixed(1));
         } catch (err) {
             console.error(err.message);
-            console.log("Insufficient SOL Balance, please try again");
+            console.log("There is no staked NFTs");
         }
     }
 
@@ -191,6 +171,7 @@ const Home = () => {
             let arr = [];
 
             var stakedNFTs = await getStakedNFTs();
+            console.log(stakedNFTs)
             for (let i = 0; i < stakedNFTs.length; i++) {
                 data.push(stakedNFTs[i]);
             }
@@ -199,8 +180,8 @@ const Home = () => {
             // let n = 10;
             for (let i = 0; i < n; i++) {
                 if (nfts.indexOf(data[i].mint) === -1) {
-                     continue;
-                 }
+                    continue;
+                }
                 var val = {};
                 try {
                     val = await axios.get(data[i].data.uri);
@@ -219,10 +200,9 @@ const Home = () => {
                 val.creator = data[i].data.creators[0].address;
                 val.creators = data[i].data.creators;
                 val.storeId = data[i].storeId;
-                val.stakedDays = data[i].stakedDays;
                 arr.push(val);
             }
-            console.log(arr)
+
             setNftData(arr)
         } catch (error) {
             console.log(error);
@@ -245,7 +225,7 @@ const Home = () => {
         const nftCreator = vaultObject.candyMachines.find((cm) => cm.toBase58() === metaNFT.creator);
 
         if (!nftCreator) {
-            alert("Candy Machine ID does not match, NFT cannot be staked. " + metaNFT.creator);
+            alert("No match candy machine. Pool has not candymachine id. " + metaNFT.creator);
             return;
         }
 
@@ -310,14 +290,14 @@ const Home = () => {
         const nftOwnerAccounts = await provider.connection.getTokenAccountsByOwner(walletPubkey, { mint: nftMint.publicKey });
         let nftAccount;
         if (nftOwnerAccounts.value.length == 0) {
-            alert("Insufficient SOL Balance, please try again");
+            alert("This nft is not your nft.");
             return;
         }
         else {
             nftAccount = nftOwnerAccounts.value[0].pubkey;
             const nftBalance = await provider.connection.getTokenAccountBalance(nftAccount);
             if (nftBalance.value.uiAmount === 0) {
-                alert("Insufficient SOL Balance, please try again");
+                alert("This nft is not your nft.");
             }
         }
 
@@ -352,7 +332,7 @@ const Home = () => {
                 toTokenAccount = toTokenAccountObject.address;
             } catch (error) {
                 if (error.message === 'TokenAccountNotFoundError' || error.message === 'TokenInvalidAccountOwnerError') {
-                    alert("Insufficient SOL Balance, please try again");
+                    alert("Need to create stake account.");
                     return;
                 }
             }
@@ -361,7 +341,6 @@ const Home = () => {
             toTokenAccount = nftAccounts.value[0].pubkey;
         }
 
-        const [cmRewardPerToken] = await getCmPerTokenRewards();
         try {
             instructions.push(await program.instruction.stake(
                 {
@@ -374,7 +353,6 @@ const Home = () => {
                         lpTokenReceiver: lpUserAccount.address,
                         // User.
                         user: userPubkey,
-                        cmRewardPerToken,
                         userStore: storePubkey,
                         owner: walletPubkey,
                         stakeFromAccount: nftAccount,
@@ -392,7 +370,7 @@ const Home = () => {
             await setNftTokenData(walletPubkey);
             setLoading(true);
         } catch (err) {
-            alert("Insufficient SOL Balance, please try again");
+            alert("Something went wrong! Please try again.");
         }
     }
 
@@ -407,9 +385,7 @@ const Home = () => {
             if (storeObject.nftMints.length > 0) {
                 accountFalg = true;
             }
-        } catch (err) { 
-            console.log(err)
-        }
+        } catch (err) { }
 
         const [vaultPublicKey] = await getVaultPubkey();
 
@@ -417,7 +393,7 @@ const Home = () => {
             var claimeAmount = await claimRewardsCore(vaultPublicKey);
             console.log(claimeAmount);
         } else {
-            console.log("Insufficient SOL Balance, please try again");
+            console.log("There is no staked NFTs");
         }
     }
 
@@ -434,7 +410,6 @@ const Home = () => {
 
         const [poolSigner] = await getPoolSigner();
         const userObject = await program.account.user.fetch(userPubkey);
-        const [cmRewardPerToken] = await getCmPerTokenRewards();
         let instructions = [];
         for (var i = 0; i < userObject.stores; i++) {
             const [storePubkey] = await getStakeUserStorePubkey(provider.wallet.publicKey, i + 1);
@@ -446,7 +421,6 @@ const Home = () => {
                     rewardVault: poolObject.rewardVault,
                     // User.
                     user: userPubkey,
-                    cmRewardPerToken,
                     userStore: storePubkey,
                     owner: provider.wallet.publicKey,
                     rewardAccount: rewardAccount.address,
@@ -463,7 +437,7 @@ const Home = () => {
             await confirmTransaction(instructions);
 
             let amt = await this.provider.connection.getTokenAccountBalance(rewardAccount.address);
-            console.log(amt)
+
             return amt.value.uiAmount;
         } catch (err) {
             return 0;
@@ -501,14 +475,8 @@ const Home = () => {
         const toTokenAccounts = await connection.getTokenAccountsByOwner(provider.wallet.publicKey, { mint: mintPubKey });
         let toTokenAccount;
         if (toTokenAccounts.value.length == 0) {
-            const toTokenAccountInfo = await getOrCreateAssociatedTokenAccount(
-                provider.connection,
-                wallet.publicKey,
-                mintPubKey,
-                wallet.publicKey,
-                signTransaction
-            );
-            toTokenAccount = toTokenAccountInfo.address;
+            alert("This is not NFT that staked by you.");
+            return;
         }
         else {
             toTokenAccount = toTokenAccounts.value[0].pubkey;
@@ -516,14 +484,9 @@ const Home = () => {
 
         const [userPubkey] = await getStakeUserPubkey(provider.wallet.publicKey);
         const [storePubkey] = await getStakeUserStorePubkey(provider.wallet.publicKey, mintObj.storeId);
-        const [cmRewardPerToken] = await getCmPerTokenRewards();
-        const userStore = await program.account.userStore.fetch(storePubkey);
-        const nftMints = userStore.nftMints.map(mint => mint.toBase58());
-        const idx = nftMints.findIndex(nft => nft === (mintObj.mint));
         // console.log(mintObj); return;
         try {
             await program.rpc.unstake(
-                idx,
                 {
                     accounts: {
                         // Stake instance.
@@ -534,7 +497,6 @@ const Home = () => {
                         lpTokenReceiver: lpUserAccount,
                         // User.
                         user: userPubkey,
-                        cmRewardPerToken,
                         userStore: storePubkey,
                         owner: provider.wallet.publicKey,
                         stakeFromAccount: toTokenAccount,
@@ -553,11 +515,11 @@ const Home = () => {
             await setNftTokenData(provider.wallet.publicKey);
         } catch (e) {
             alert("Something when wrong. Try again");
-            console.log(e);
         }
         setLoading(true);
+
     }
-    
+
     const getMetadata = async (mint) => {
         const TOKEN_METADATA_PROGRAM_ID = new anchor.web3.PublicKey(
             'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s',
@@ -631,28 +593,11 @@ const Home = () => {
                             {nftData &&
                                 nftData.length > 0 &&
                                 nftData.map((val, ind) => {
-                                     if (nfts.indexOf(val.mint) === -1) {
-                                         return null;
-                                     }
+                                    if (nfts.indexOf(val.mint) === -1) {
+                                        return null;
+                                    }
                                     return (
                                         <Col key={ind} xs="6" sm="6" md="4" lg="4" xl="4" style={{ textAlign: 'center' }} className={(val.staked === true ? 'staked' : 'unstaked')}>
-                                            {
-                                                isMobile ? null : (
-                                                    val.staked === true ?
-                                                        <Badge
-                                                            color="Dark"
-                                                            className="nft-head"
-                                                        >
-                                                            {val.data.name}
-                                                        </Badge> :
-                                                        <Badge
-                                                            color="Dark"
-                                                            outline
-                                                            className="nft-head"
-                                                        >
-                                                            {val.data.name}
-                                                        </Badge>)
-                                            }
                                             <Card className={"nft-card"}>
                                                 <CardImg
                                                     alt="Card image cap"
@@ -672,8 +617,7 @@ const Home = () => {
                                                             className="nft-button"
                                                         >
                                                             UNSTAKE
-                                                        </Button> :
-                                                        <></>)
+                                                        </Button> : <></>)
                                             }
                                         </Col>
                                     );
@@ -696,18 +640,7 @@ const Home = () => {
                                 </Button>
                                 <ul aria-label="dropdown-list" className={"mobile-menu" + (showMenu ? ' mobile-menu-active' : '')} role="menu">
                                     <li class="mobile-menu-item" role="menuitem">
-                                        <div>Daily Rewards: {dailyRewards} $BNTY</div>
-                                    </li>
-                                    <li class="mobile-menu-item" role="menuitem">
-                                        <div>Pending Rewards: {pendingRewards} $BNTY</div>
-                                    </li>
-                                    <li class="mobile-menu-item" role="menuitem">
-                                        <div>74% of Bounty Hunters Staked</div>
-                                    </li>
-                                    <li class="mobile-menu-item" role="menuitem">
-                                        <div>My Total Staked: {stakedNfts}</div>
-                                    </li>
-                                    <li class="mobile-menu-item" role="menuitem">
+                                        <Button className="btn-claim mobile" onClick={() => claimRewards()}>Claim Rewards</Button>
                                     </li>
                                     <li class="mobile-menu-item" role="menuitem">
                                         <WalletModalProvider>
@@ -730,16 +663,15 @@ const Home = () => {
                                 </WalletModalProvider>
                             </Col>
                             <Col style={{ textAlign: 'right' }}>
-                                <Row style={{ minWidth: 850 }}>
-                                    <Col style={{ whiteSpace: "nowrap" }}>
-                                        <div className="pendding-rewards">74% of Bounty Hunters Staked</div>
+                                <Row>
+                                    <Col>
+                                        <div className="pendding-rewards">Total Staked: {totalStaked} NFTs</div>
                                         <div className="pendding-rewards">My Total Staked: {stakedNfts} NFTs</div>
-                                    </Col>
-                                    <Col style={{ whiteSpace: "nowrap" }}>
                                         <div className="pendding-rewards">Daily Rewards: {dailyRewards} $BNTY</div>
                                         <div className="pendding-rewards">Pending Rewards: {pendingRewards} $BNTY</div>
                                     </Col>
                                     <Col>
+                                        <Button className="btn-claim" onClick={() => claimRewards()}>Claim Rewards</Button>
                                     </Col>
                                 </Row>
                             </Col>
