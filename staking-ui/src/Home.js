@@ -649,14 +649,7 @@ const Home = () => {
                                                         >
                                                             UNSTAKE
                                                         </Button> : 
-                                                                                                                <Button
-                                                                                                                color="info"
-                                                                                                                outline
-                                                                                                                onClick={() => stakeNFT(val)}
-                                                                                                                className="nft-button"
-                                                                                                            >
-                                                                                                                CLICK TO STAKE
-                                                                                                            </Button>)
+                                                            <></>)
                                             }
                                         </Col>
                                     );
