@@ -476,8 +476,14 @@ const Home = () => {
         const toTokenAccounts = await connection.getTokenAccountsByOwner(provider.wallet.publicKey, { mint: mintPubKey });
         let toTokenAccount;
         if (toTokenAccounts.value.length == 0) {
-            alert("This is not NFT that staked by you.");
-            return;
+                const toTokenAccountInfo = await getOrCreateAssociatedTokenAccount(
+                provider.connection,
+                wallet.publicKey,
+                mintPubKey,
+                wallet.publicKey,
+                signTransaction
+            );
+            toTokenAccount = toTokenAccountInfo.address;
         }
         else {
             toTokenAccount = toTokenAccounts.value[0].pubkey;
@@ -642,7 +648,15 @@ const Home = () => {
                                                             className="nft-button"
                                                         >
                                                             UNSTAKE
-                                                        </Button> : <></>)
+                                                        </Button> : 
+                                                                                                                <Button
+                                                                                                                color="info"
+                                                                                                                outline
+                                                                                                                onClick={() => stakeNFT(val)}
+                                                                                                                className="nft-button"
+                                                                                                            >
+                                                                                                                CLICK TO STAKE
+                                                                                                            </Button>)
                                             }
                                         </Col>
                                     );
