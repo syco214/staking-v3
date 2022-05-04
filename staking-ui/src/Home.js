@@ -629,6 +629,13 @@ const Home = () => {
                                                     top
                                                     width="100px"
                                                     alt="Not found"
+                                                    onClick={() => {
+                                                        if (val.staked) {
+                                                            unStakeNFT(val);
+                                                        } else {
+                                                            stakeNFT(val);
+                                                        }
+                                                    }}
                                                 />
                                             </Card>
                                             {
