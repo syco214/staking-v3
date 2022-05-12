@@ -587,125 +587,14 @@ const Home = () => {
         <div className="main">
             <Row style={{ margin: 0 }}>
                 <div className="App-header">
-                    (DEPRECIATED) BOUNTY HUNTER SPACE GUILD COMMAND CENTER V1
+                    The previous staking program has been closed, your staked NFTs have been returned to your wallets. Please refer to the links below and open a ticket in our discord for any issues.
                 </div>
                 <a className="App-header2" href="https://staking.bountyhunterspaceguild.com/">
-                    PLEASE STAKE BOUNTY HUNTERS HERE.
+                    STAKE BOUNTY HUNTERS HERE.
                 </a>
-            </Row>
-            <Container>
-                <Row>
-                    {loading ? (
-                        <>
-                            {nftData &&
-                                nftData.length > 0 &&
-                                nftData.map((val, ind) => {
-                                    if (nfts.indexOf(val.mint) === -1) {
-                                        return null;
-                                    }
-                                    return (
-                                        <Col key={ind} xs="6" sm="6" md="4" lg="4" xl="4" style={{ textAlign: 'center' }} className={(val.staked === true ? 'staked' : 'unstaked')}>
-                                            {
-                                                isMobile ? null : (
-                                                    val.staked === true ?
-                                                        <Badge
-                                                            color="Dark"
-                                                            className="nft-head"
-                                                        >
-                                                            {val.data.name}
-                                                        </Badge> :
-                                                        <Badge
-                                                            color="Dark"
-                                                            outline
-                                                            className="nft-head"
-                                                        >
-                                                            {val.data.name}
-                                                        </Badge>)
-                                            }
-                                            <Card className={"nft-card"}>
-                                                <CardImg
-                                                    alt="Card image cap"
-                                                    src={val.data.image}
-                                                    top
-                                                    width="100px"
-                                                />
-                                            </Card>
-                                            {
-                                                isMobile ? null : (
-                                                    val.staked === true ?
-                                                        <Button
-                                                            color="warning"
-                                                            outline
-                                                            onClick={() => unStakeNFT(val)}
-                                                            className="nft-button"
-                                                        >
-                                                            UNSTAKE
-                                                        </Button> : 
-                                                            <></>)
-                                            }
-                                        </Col>
-                                    );
-                                })}
-                        </>
-                    ) : (
-                        <>
-                            <div id='loading'></div>
-                        </>
-                    )}
-                </Row>
-            </Container>
-            <Row className={"footer" + (connection ? ' connected' : ' disconnected')}>
-                {
-                    isMobile ? (
-                        <Row className="mobile-panel">
-                            <Col>
-                                <Button className="btn-mobile-menu" onClick={(e) => setShowMenu(!showMenu)}>
-                                    <FaBars />
-                                </Button>
-                                <ul aria-label="dropdown-list" className={"mobile-menu" + (showMenu ? ' mobile-menu-active' : '')} role="menu">
-                                    <li class="mobile-menu-item" role="menuitem">
-                                        <a href="https://forms.gle/dLqG9oFvX5b6TvFp7">
-                                            <Button className="btn-claim mobile" disabled={true}>Fill up this form to claim pending $BNTY</Button>  
-                                        </a>
-                                    </li>
-                                    <li class="mobile-menu-item" role="menuitem">
-                                        <WalletModalProvider>
-                                            <WalletMultiButton />
-                                        </WalletModalProvider>
-                                    </li>
-                                </ul>
-                            </Col>
-                            <Col style={{ textAlign: 'right' }}>
-                                <Button className="btn-globe">
-                                    <GlobeIcon />
-                                </Button>
-                            </Col>
-                        </Row>
-                    ) : (
-                        <Row className="pannel">
-                            <Col>
-                                <WalletModalProvider>
-                                    <WalletMultiButton />
-                                </WalletModalProvider>
-                            </Col>
-                            <Col style={{ textAlign: 'right' }}>
-                                <Row>
-                                    <Col>
-                                        <div className="pendding-rewards">Total Staked: {totalStaked} NFTs</div>
-                                        <div className="pendding-rewards">My Total Staked: {stakedNfts} NFTs</div>
-                                        <div className="pendding-rewards">Daily Rewards: {dailyRewards} $BNTY</div>
-                                        <div className="pendding-rewards">Pending Rewards: {pendingRewards} $BNTY</div>
-                                    </Col>
-                                    <Col>
-                                        <a href="https://forms.gle/dLqG9oFvX5b6TvFp7">
-                                            <Button className="btn-claim">Fill up this form to claim pending $BNTY 
-                                            </Button>
-                                        </a>
-                                    </Col>
-                                </Row>
-                            </Col>
-                        </Row>
-                    )}
+                <a className="App-header2" href="https://forms.gle/7hQEHeb9jdUWYY7g7">
+                    Claim Pending BNTY Here
+                </a>
             </Row>
         </div>
     );
